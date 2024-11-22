@@ -11,8 +11,9 @@ Tech Stack: Backend for handling resumes and feedback; an API to communicate bet
  1. Justin Abraham
  2. Valliammai Janakiraman
  3. Justin Nguyen
- 4. Josh Rosillo
- 5. Alexandra Drzewosz
+ 4. Nirbhav Talloju
+ 5. Josh Rosillo
+ 6. Alexandra Drzewosz
 
 # Contact Info
 
