@@ -6,12 +6,11 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "5000:5000"
+      - "8000:8000"
     volumes:
       - ./backend:/app
-      - ./requirements.txt:/app/requirements.txt
-    environment:
-      - FLASK_ENV=development
+    networks:
+      - app-network
 
   frontend:
     build:
@@ -23,4 +22,8 @@ services:
       - ./frontend:/app
     depends_on:
       - backend
+
+networks:
+  app-network:
+    driver: bridge
       

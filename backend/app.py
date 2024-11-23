@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI
 
-app = Flask(__name__)
+app = FastAPI()
 
-@app.route('/api', methods=['GET'])
-def home():
-    return jsonify({'message': 'The flask server is working!'})
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+@app.get("/api")
+def read_api():
+    return {"Hello": "API"}
