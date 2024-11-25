@@ -1,13 +1,18 @@
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SignUp from './components/SignUp';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
 import logo from './logo.svg';
 import './App.css';
 import ResumeForm from './components/ResumeForm';
-import React, { useState } from "react";
 
 function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
 
+  // Simulated API call
   const fetchData = async () => {
     setLoading(true);
     setError(null);
@@ -26,6 +31,7 @@ function App() {
 
   return (
     <div className="App">
+      {/* Header Section */}
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>Edit <code>src/App.js</code> and save to reload.</p>
@@ -44,7 +50,18 @@ function App() {
           Learn React with Valli!
         </a>
       </header>
-      <ResumeForm/>
+
+      {/* Router Section */}
+      <Router>
+        <Routes>
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+      </Router>
+
+      {/* Resume Form */}
+      <ResumeForm />
     </div>
   );
 }

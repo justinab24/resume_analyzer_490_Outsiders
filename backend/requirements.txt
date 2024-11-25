@@ -1,1 +1,8 @@
+
+fastapi
+uvicorn
+pydantic
+python-jose
+bcrypt
 pdfplumber
+
