@@ -22,7 +22,7 @@ def read_root():
 def read_api():
     return {"Hello": "API"}
     
-@app.post("/api/register")
+@app.post("/api/register") #register new users and store them in the users list
 async def register(request: Request):
     json_payload = await request.json()
     email = json_payload.get("email")
@@ -42,7 +42,7 @@ async def register(request: Request):
 
     return {"message": "User registered successfully"}
 
-def jwt_generator(username):
+def jwt_generator(username): #generate jwt session token if user successfully logs in
     expiration = datetime.now() + timedelta(hours=3)
     print(username)
     token = jwt.encode(
@@ -53,7 +53,7 @@ def jwt_generator(username):
     return token
 
 
-@app.post("/api/login")
+@app.post("/api/login") #verify user credentials based on the users list
 async def login(request: Request):
     json_payload = await request.json()
     email = json_payload.get("email")
