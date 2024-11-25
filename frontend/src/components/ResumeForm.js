@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const ResumeForm = () => {
-  const MAX_CHAR_LIMIT = 5000;
+  //used later for validation
+  const MAX_CHAR_LIMIT = 5000; 
   const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
   const [resume, setResume] = useState(null);
+  const [charCount, setCharcount] = useState(MAX_CHAR_LIMIT);
   const [jobDescription, setJobDescription] = useState('');
   const [resumeError, setResumeError] = useState('');
   const [descError, setDescError] = useState('');
   const [submissionMessage, setSubmissionMessage] = useState('');
-  const [charCount, setCharcount] = useState(MAX_CHAR_LIMIT);
+  
 
   // Check if file meets standards for upload
   const fileUpload = (e) => {
@@ -57,8 +59,8 @@ const ResumeForm = () => {
     }
 
     const formData = new FormData();
-    formData.append('resume', resume);
     formData.append('jobDescription', jobDescription);
+    formData.append('resume', resume);
 
     try {
       // First, upload the resume to /api/resume-upload
