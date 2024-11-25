@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+import ResumeForm from './components/ResumeForm';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           Learn React with Valli!
         </a>
       </header>
+      <ResumeForm/>
     </div>
   );
 }

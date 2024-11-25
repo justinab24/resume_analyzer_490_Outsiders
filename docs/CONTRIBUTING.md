@@ -1,7 +1,7 @@
 Guidelines for Branch Naming, Commit Messages, and PR Reviews
 
 Branch Naming:
-- Follow this convention: feature/{short-description} ::: EX> feature/implement-usrlogin
+- Follow this convention: feature/{your name} ::: EX> feature/Bob
 
 Commit Messages: 
 - Title: Brief and concise
