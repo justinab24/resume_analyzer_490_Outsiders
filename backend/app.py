@@ -57,6 +57,7 @@ async def upload_resume(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
+
 @app.post("/submit/text")
 async def submit_text(submission: TextSubmission):
     """
