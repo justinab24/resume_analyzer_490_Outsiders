@@ -29,6 +29,8 @@ def extract_text_from_pdf_in_memory(file_content: bytes) -> str:
 
 app = FastAPI()
 
+users = []
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
