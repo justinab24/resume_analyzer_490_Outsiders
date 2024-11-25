@@ -1,6 +1,7 @@
+import logo from './logo.svg';
+import './App.css';
+import ResumeForm from './components/ResumeForm';
 import React, { useState } from "react";
-import logo from "./logo.svg";
-import "./App.css";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -40,9 +41,10 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+          Learn React with Valli!
         </a>
       </header>
+      <ResumeForm/>
     </div>
   );
 }
