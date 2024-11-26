@@ -8,6 +8,7 @@ import bcrypt
 import jwt
 import pdfplumber
 import os
+import os
 import io
 
 #python3 -m uvicorn app:app --reload to run the api
@@ -36,6 +37,7 @@ users = []
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+    return {"Hello": "World"}
 
 @app.get("/api")
 def read_api():
@@ -53,18 +55,32 @@ async def register(request: Request):
     for user in users:
         if user['email'] == email:
             return {"message": "Email already registered, please sign in"}
+            return {"message": "Email already registered, please sign in"}
     password = json_payload.get("password")
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+
     newUser = {
         "email": email,
         "password": hashed_password,
+        "username": json_payload.get("username"),
         "username": json_payload.get("username"),
     }
 
     users.append(newUser)
 
     return {"message": "User registered successfully"}
+
+def jwt_generator(username):
+    expiration = datetime.now() + timedelta(hours=3)
+    print(username)
+    token = jwt.encode(
+        {"sub": username, "exp": expiration},
+        SECRET_KEY,
+        algorithm="HS256",
+    )
+    return token
+
 
 def jwt_generator(username):
     expiration = datetime.now() + timedelta(hours=3)
@@ -87,6 +103,7 @@ async def login(request: Request):
         if user['email'] == email:
             if bcrypt.checkpw(password.encode('utf-8'), user['password']):
                 token = jwt_generator(user['username'])
+                token = jwt_generator(user['username'])
                 return {"message": "Login successful", "token": token}
             else:
                 return {"message": "Invalid password"}
@@ -99,9 +116,13 @@ async def resumeUpload(file: UploadFile = File(...)):
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Invalid file type. Only PDF files are accepted.")
 
+
     try:
         # Read the uploaded file content into memory
+        # Read the uploaded file content into memory
         file_content = await file.read()
+
+        # Extract text from the PDF stored in memory using pdfplumber
 
         # Extract text from the PDF stored in memory using pdfplumber
         extracted_text = extract_text_from_pdf_in_memory(file_content)
