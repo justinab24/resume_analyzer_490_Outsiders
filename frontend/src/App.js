@@ -23,7 +23,21 @@ function App() {
       setLoading(false);
     }
   };
-
+  const sampleData = {
+    fitScore: {
+      total: 75, // Overall percentage
+      matched: 50,
+      partial: 15,
+      missing: 35,
+    },
+    matchedSkills: ['JavaScript', 'React', 'Node.js', 'Git'],
+    improvementSuggestions: [
+      'Add proficiency in Python.',
+      'Highlight leadership experience.',
+      'Include more technical keywords like "REST APIs".',
+    ],
+  };
+  
   return (
     <div className="App">
       <header className="App-header">
