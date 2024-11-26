@@ -1,6 +1,11 @@
 from fastapi import FastAPI, File, Request, UploadFile, Form, HTTPException
+from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import bcrypt
+import jwt
 import pdfplumber
 import os
 import io
@@ -8,26 +13,23 @@ import io
 #python3 -m uvicorn app:app --reload to run the api
 #http://127.0.0.1:8000/docs for easy testing of the api - use try it out button
 
+load_dotenv(dotenv_path="./backend/.env")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+
+
+
 class TextSubmission(BaseModel):
     text: str
 
-def extract_text_from_pdf_in_memory(file_content: bytes) -> str:
-    """
-    Extract text from a PDF file stored in memory.
-
-    Args:
-        file_content (bytes): The binary content of the PDF file.
-
-    Returns:
-        str: Extracted text from the PDF file.
-    """
-    with pdfplumber.open(io.BytesIO(file_content)) as pdf:
-        text = ""
-        for page in pdf.pages:
-            text += page.extract_text() + "\n"
-    return text
-
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Allow frontend's origin (React app)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 users = []
 
@@ -38,6 +40,11 @@ def read_root():
 @app.get("/api")
 def read_api():
     return {"Hello": "API"}
+
+@app.get("/dashboard")
+async def dashboard(token: str):
+    return {"message": f"Welcome to the dashboard"}
+
 
 @app.post("/api/register")
 async def register(request: Request):
@@ -73,6 +80,7 @@ def jwt_generator(username):
 @app.post("/api/login")
 async def login(request: Request):
     json_payload = await request.json()
+    print(users)
     email = json_payload.get("email")
     password = json_payload.get("password")
     for user in users:
@@ -84,8 +92,9 @@ async def login(request: Request):
                 return {"message": "Invalid password"}
     return {"message": "User not found"}
 
-@app.post("/upload/resume")
-async def upload_resume(file: UploadFile = File(...)):
+@app.post("/api/resume-upload")
+async def resumeUpload(file: UploadFile = File(...)):
+    print("did we hit this endpoint")
     # Check if the uploaded file is a PDF
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Invalid file type. Only PDF files are accepted.")
@@ -97,16 +106,18 @@ async def upload_resume(file: UploadFile = File(...)):
         # Extract text from the PDF stored in memory using pdfplumber
         extracted_text = extract_text_from_pdf_in_memory(file_content)
 
+        print(extracted_text)
+
         return {
             "message": "Resume uploaded and processed successfully.",
-            "extracted_text": extracted_text[:500]  # Limit response to 500 characters for brevity
+            "extracted_text": extracted_text[:5000]  # Limit response to 5000 characters for brevity
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-@app.post("/submit/text")
-async def submit_text(submission: TextSubmission):
+@app.post("/api/job-description")
+async def descriptionUpload(submission: TextSubmission):
     """
     Endpoint to submit resume text directly.
     Validates that the text is not empty and meets a minimum length requirement.
@@ -117,10 +128,10 @@ async def submit_text(submission: TextSubmission):
             detail="Text cannot be empty or only whitespace."
         )
     
-    if len(submission.text) < 50:  # Example: Require at least 50 characters
+    if len(submission.text) > 5000:  # Example: Require at least 50 characters
         raise HTTPException(
             status_code=400,
-            detail="Text is too short. Please provide at least 50 characters."
+            detail="Job description exceeds character limit."
         )
     
     return JSONResponse(
@@ -128,3 +139,18 @@ async def submit_text(submission: TextSubmission):
     )
 
 
+def extract_text_from_pdf_in_memory(file_content: bytes) -> str:
+    """
+    Extract text from a PDF file stored in memory.
+
+    Args:
+        file_content (bytes): The binary content of the PDF file.
+
+    Returns:
+        str: Extracted text from the PDF file.
+    """
+    with pdfplumber.open(io.BytesIO(file_content)) as pdf:
+        text = ""
+        for page in pdf.pages:
+            text += page.extract_text() + "\n"
+    return text

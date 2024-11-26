@@ -59,22 +59,30 @@ const ResumeForm = () => {
     }
 
     const formData = new FormData();
-    formData.append('jobDescription', jobDescription);
-    formData.append('resume', resume);
+    formData.append('file', resume);
 
     try {
       // First, upload the resume to /api/resume-upload
-      const resumeResponse = await axios.post('/api/resume-upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const resumeResponse = await axios.post('http://localhost:8000/api/resume-upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
+  
 
       if (resumeResponse.status !== 200) {
         throw new Error('Failed to upload resume');
       }
 
       // Now submit the job description to /api/job-description
-      const jobDescriptionResponse = await axios.post('/api/job-description', { jobDescription });
-
+      const jobDescriptionResponse = await axios.post('http://localhost:8000/api/job-description', 
+        { text: jobDescription }, // Make sure this matches the TextSubmission model
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
       if (jobDescriptionResponse.status === 200) {
         setSubmissionMessage('Submission successful!');
       } else {

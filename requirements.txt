@@ -5,3 +5,4 @@ pyjwt
 python-dotenv
 pdfplumber
 python-multipart
+starlette
