@@ -10,6 +10,7 @@ import pdfplumber
 import os
 import os
 import io
+import docx
 
 #python3 -m uvicorn app:app --reload to run the api
 #http://127.0.0.1:8000/docs for easy testing of the api - use try it out button
@@ -113,19 +114,20 @@ async def login(request: Request):
 async def resumeUpload(file: UploadFile = File(...)):
     print("did we hit this endpoint")
     # Check if the uploaded file is a PDF
-    if file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="Invalid file type. Only PDF files are accepted.")
+    if file.content_type not in ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only PDF and DOCX files are accepted.")
 
 
     try:
         # Read the uploaded file content into memory
-        # Read the uploaded file content into memory
         file_content = await file.read()
 
-        # Extract text from the PDF stored in memory using pdfplumber
+        # Extract text from the PDF or DOCX stored in memory
+        if file.content_type == "application/pdf":
+            extracted_text = extract_text_from_pdf_in_memory(file_content)
+        elif file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            extracted_text = extract_text_from_docx_in_memory(file_content)
 
-        # Extract text from the PDF stored in memory using pdfplumber
-        extracted_text = extract_text_from_pdf_in_memory(file_content)
 
         print(extracted_text)
 
@@ -134,6 +136,7 @@ async def resumeUpload(file: UploadFile = File(...)):
             "extracted_text": extracted_text[:5000]  # Limit response to 5000 characters for brevity
         }
     except Exception as e:
+        print(f"An error occurred: {str(e)}");
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
@@ -174,4 +177,20 @@ def extract_text_from_pdf_in_memory(file_content: bytes) -> str:
         text = ""
         for page in pdf.pages:
             text += page.extract_text() + "\n"
+    return text
+
+def extract_text_from_docx_in_memory(file_content: bytes) -> str:
+    """
+    Extract text from a DOCX file stored in memory.
+
+    Args:
+        file_content (bytes): The binary content of the DOCX file.
+
+    Returns:
+        str: Extracted text from the DOCX file.
+    """
+    doc = docx.Document(io.BytesIO(file_content))
+    text = ""
+    for paragraph in doc.paragraphs:
+        text += paragraph.text + "\n"
     return text

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) => {
+const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, setLoading}) => {
   const navigate = useNavigate();
   //used later for validation
   const MAX_CHAR_LIMIT = 5000; 
@@ -14,14 +14,13 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) 
   const [resumeError, setResumeError] = useState('');
   const [descError, setDescError] = useState('');
   const [submissionMessage, setSubmissionMessage] = useState('');
+  const [descWarning, setDescWarning] = useState('');
   
-
-  // Check if file meets standards for upload
   const fileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.type !== 'application/pdf') {
-        setResumeError('Only PDF files are allowed');
+      if (file.type !== 'application/pdf' && file.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        setResumeError('Only PDF and DOCX files are allowed');
         setResume(null);
       } else if (file.size > MAX_FILE_SIZE) {
         setResumeError('File size must be less than 2MB');
@@ -32,7 +31,6 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) 
       }
     }
   };
-
   // Check input fields
   const jobDescript = (e) => {
     const input = e.target.value;
@@ -41,11 +39,14 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) 
     setJobDescription(input);
     setCharcount(remainingChars);
 
-    if (remainingChars < 100) {
-      setDescError('');
-    } else if (remainingChars < 0) {
+    if (remainingChars < 0) {
       setDescError('Input cannot exceed 5000 characters');
+      setDescWarning('');
+    } else if (remainingChars < 20) {
+      setDescError('');
+      setDescWarning('Warning: Less than 20 characters remaining');
     } else {
+      setDescWarning('');
       setDescError('');
     }
   };
@@ -54,6 +55,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
     // Check for errors before submission
     if (resumeError || descError || !resume || jobDescription.trim() === '') {
       setSubmissionMessage('Errors exist: please fix errors before trying again');
@@ -86,6 +88,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) 
         }
       );
       if (jobDescriptionResponse.status === 200) {
+        setLoading(false);
         setSubmissionMessage('Submission successful!');
         setFitScore({
           total: 75,
@@ -110,8 +113,8 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) 
 
         {/* Resume Upload Section */}
         <div>
-          <label htmlFor="resume">Upload Resume (PDF Only):</label>
-          <input type="file" id="resume" accept=".pdf" onChange={fileUpload} />
+          <label htmlFor="resume">Upload Resume (PDF and Docx Only):</label>
+          <input type="file" id="resume" accept=".pdf,.docx" onChange={fileUpload} />
           {resumeError && <div className="error">{resumeError}</div>}
         </div>
 
@@ -129,6 +132,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) 
             maxLength={MAX_CHAR_LIMIT}
           />
           <div>Characters remaining: {charCount}</div>
+          {descWarning && <div className="warning">{descWarning}</div>}
           {descError && <div className="error">{descError}</div>}
         </div>
 

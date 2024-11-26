@@ -4,6 +4,27 @@ import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import ResumeForm from './ResumeForm';
 
 function Dashboard() {  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(null);
+
+  // Simulated API call
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Simulate API call with a timeout
+      const response = await new Promise((resolve) =>
+        setTimeout(() => resolve({ data: "Sample API Data" }), 2000)
+      );
+      setData(response.data);
+    } catch (err) {
+      setError("Failed to fetch data. Try again");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [fitScore, setFitScore] = useState({
     total: 0,
     matched: 0,
@@ -39,7 +60,9 @@ function Dashboard() {
         setFitScore={setFitScore}
         setMatchedSkills={setMatchedSkills}
         setImprovementSuggestions={setImprovementSuggestions}
+        setLoading={setLoading}
       />
+      {loading && <div className="spinner"></div>}
       <h2>Resume Analysis Dashboard</h2>
 
       {/* Resume Fit Score */}
