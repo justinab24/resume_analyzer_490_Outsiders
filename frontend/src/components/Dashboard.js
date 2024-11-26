@@ -1,9 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ProgressBar, ListGroup, Card } from 'react-bootstrap';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import ResumeForm from './ResumeForm';
 
-function Dashboard({ data }) {
-  const { fitScore, matchedSkills, improvementSuggestions } = data;
+function Dashboard() {  
+  const [fitScore, setFitScore] = useState({
+    total: 0,
+    matched: 0,
+    partial: 0,
+    missing: 0
+  });
+  const [matchedSkills, setMatchedSkills] = useState([]);
+  const [improvementSuggestions, setImprovementSuggestions] = useState([]);
+  // const { fitScore, matchedSkills, improvementSuggestions } = data;
+
+  // const fitScore = {
+  //   total: 75,
+  //   matched: 50,
+  //   partial: 15,
+  //   missing: 35,
+  // }
+  // const matchedSkills = ['JavaScript', 'React'];
+  // const improvementSuggestions = ['Add proficiency in Python.'];
 
   // Pie chart color scheme
   const COLORS = ['#28a745', '#ffc107', '#dc3545'];
@@ -17,6 +35,11 @@ function Dashboard({ data }) {
 
   return (
     <div className="container my-4">
+      <ResumeForm
+        setFitScore={setFitScore}
+        setMatchedSkills={setMatchedSkills}
+        setImprovementSuggestions={setImprovementSuggestions}
+      />
       <h2>Resume Analysis Dashboard</h2>
 
       {/* Resume Fit Score */}

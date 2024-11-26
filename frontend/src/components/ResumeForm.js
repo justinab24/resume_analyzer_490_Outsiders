@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-const ResumeForm = () => {
+const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions}) => {
+  const navigate = useNavigate();
   //used later for validation
   const MAX_CHAR_LIMIT = 5000; 
   const MAX_FILE_SIZE = 2 * 1024 * 1024;
@@ -85,6 +87,14 @@ const ResumeForm = () => {
       );
       if (jobDescriptionResponse.status === 200) {
         setSubmissionMessage('Submission successful!');
+        setFitScore({
+          total: 75,
+          matched: 50,
+          partial: 15,
+          missing: 35,
+        })
+        setMatchedSkills(['JavaScript', 'React']);
+        setImprovementSuggestions(['Add proficiency in Python.']);
       } else {
         setSubmissionMessage('Failed to submit job description.');
       }
