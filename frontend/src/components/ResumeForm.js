@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './Dashboard.css';
 
-const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, setLoading}) => {
+const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, setLoading, setSubmitted}) => {
   const navigate = useNavigate();
   //used later for validation
   const MAX_CHAR_LIMIT = 5000; 
@@ -89,6 +90,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
       );
       if (jobDescriptionResponse.status === 200) {
         setLoading(false);
+        setSubmitted(true);
         setSubmissionMessage('Submission successful!');
         setFitScore({
           total: 75,
@@ -108,12 +110,11 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
 
   return (
     <div>
-      <h1>Upload Resume and Job Description</h1>
       <form onSubmit={handleSubmit}>
 
         {/* Resume Upload Section */}
         <div>
-          <label htmlFor="resume">Upload Resume (PDF and Docx Only):</label>
+          <label htmlFor="resume">(PDF and Docx Only):</label>
           <input type="file" id="resume" accept=".pdf,.docx" onChange={fileUpload} />
           {resumeError && <div className="error">{resumeError}</div>}
         </div>
@@ -121,7 +122,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
         <br />
 
         {/* Job Description Section */}
-        <div>
+        <div className="textarea-container">
           <label htmlFor="jobDescription">Job Description:</label>
           <textarea
             id="jobDescription"

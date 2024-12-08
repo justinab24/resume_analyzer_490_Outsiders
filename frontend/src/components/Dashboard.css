@@ -1,0 +1,157 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Changed from center to flex-start */
+  height: 100vh;
+  background-color: #f8f9fa; /* Light grey background for better contrast */
+  margin: 0;
+  font-family: Arial, sans-serif; /* Set a default font */
+  padding-top: 20px; /* Added padding at the top */
+  padding-bottom: 20px; /* Added padding at the bottom */
+}
+
+.container {
+  width: 80%;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+h1, h2 {
+  font-size: 24px;
+  color: #343a40; /* Dark grey color for headings */
+  margin-bottom: 20px;
+}
+
+h4 {
+  font-size: 20px;
+  color: #495057; /* Slightly lighter grey for subheadings */
+}
+
+label {
+  font-weight: bold;
+  color: #495057;
+}
+
+textarea {
+  width: 100%;
+  max-width: 100%; /* Ensure it doesn't exceed the container width */
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+input[type="file"] {
+  display: block;
+  margin-top: 10px;
+}
+
+button {
+  background-color: #007bff; /* Bootstrap primary color */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #0056b3; /* Darker shade for hover effect */
+}
+
+.error {
+  color: #dc3545; /* Bootstrap danger color */
+  margin-top: 10px;
+}
+
+.warning {
+  color: #ffc107; /* Bootstrap warning color */
+  margin-top: 10px;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.Card {
+  margin-bottom: 20px;
+}
+
+.Card-title {
+  font-size: 24px;
+  color: #343a40;
+}
+
+
+
+.custom-progress-bar {
+  width: 100%;
+  height: 20px; /* Adjust the height as needed */
+  margin-top: 10px;
+}
+
+.side-by-side-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 50px; /* Optional: space between the two components */
+  width: 100vw; /* Full width of the viewport */
+  padding: 0 20px; /* Optional: padding on the sides */
+}
+
+.side-by-side-container > div:first-child {
+  flex: 1; /* One-third of the space */
+}
+
+.side-by-side-container > div:last-child {
+  flex: 2; /* Two-thirds of the space */
+}
+
+.side-by-side-container h1 {
+  margin-top: 0; /* Ensure headings are aligned at the top */
+}
+
+.textarea-container {
+  max-width: 100%; /* Ensure it doesn't exceed the container width */
+}
+
+.fit-score-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between the title and the score */
+}
+
+.skills-breakdown-container {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Space between the text and the pie chart */
+}
+
+@media (max-width: 768px) {
+  .side-by-side-container {
+    flex-direction: column;
+  }
+
+  .side-by-side-container > div {
+    flex: none;
+    width: 100%;
+    align-items: flex-start; /* Reset alignment for smaller screens */
+  }
+}
