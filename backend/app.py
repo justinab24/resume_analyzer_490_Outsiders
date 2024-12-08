@@ -11,6 +11,8 @@ import os
 import os
 import io
 import docx
+import re
+from collections import Counter
 
 #python3 -m uvicorn app:app --reload to run the api
 #http://127.0.0.1:8000/docs for easy testing of the api - use try it out button
@@ -194,3 +196,54 @@ def extract_text_from_docx_in_memory(file_content: bytes) -> str:
     for paragraph in doc.paragraphs:
         text += paragraph.text + "\n"
     return text
+
+
+def calculate_fit_score(resume_text, job_description):
+    # Tokenize and normalize text
+    def tokenize(text):
+        return re.findall(r'\b\w+\b', text.lower())
+
+    resume_tokens = tokenize(resume_text)
+    job_tokens = tokenize(job_description)
+
+    # Count matching keywords
+    resume_counter = Counter(resume_tokens)
+    job_counter = Counter(job_tokens)
+
+    matches = sum((resume_counter & job_counter).values())
+    total_keywords = len(job_tokens)
+
+    return int((matches / total_keywords) * 100) if total_keywords > 0 else 0
+
+@app.post("/api/calculate-fit-score")
+async def calculate_fit_score_endpoint(
+    resume_text: str = Form(...), 
+    job_description: str = Form(...)
+):
+    """
+    API endpoint to calculate a fit score between a resume and job description.
+    Args:
+        resume_text (str): Text extracted from the resume.
+        job_description (str): Text provided for the job description.
+    Returns:
+        JSONResponse: Fit score and message.
+    """
+    if not resume_text.strip() or not job_description.strip():
+        raise HTTPException(
+            status_code=400, 
+            detail="Both resume text and job description must be provided."
+        )
+
+    try:
+        fit_score = calculate_fit_score(resume_text, job_description)
+        return JSONResponse(
+            content={
+                "message": "Fit score calculated successfully.",
+                "fit_score": fit_score
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"An error occurred during fit score calculation: {str(e)}"
+        )
