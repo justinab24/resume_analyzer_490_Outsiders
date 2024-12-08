@@ -38,7 +38,6 @@ users = []
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
-    return {"Hello": "World"}
 
 @app.get("/api")
 def read_api():
