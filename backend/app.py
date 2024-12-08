@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import httpx
 import bcrypt
 import jwt
 import pdfplumber
@@ -11,12 +12,16 @@ import os
 import os
 import io
 import docx
+import time
 
 #python3 -m uvicorn app:app --reload to run the api
 #http://127.0.0.1:8000/docs for easy testing of the api - use try it out button
 
 load_dotenv(dotenv_path="./backend/.env")
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+HF_API_KEY = os.getenv("HF_API_KEY")
+
+timeout = httpx.Timeout(30.0, connect=60.0)  # 30 seconds for read, 60 seconds for connection
 
 
 
@@ -55,8 +60,7 @@ async def register(request: Request):
     email = json_payload.get("email")
     for user in users:
         if user['email'] == email:
-            return {"message": "Email already registered, please sign in"}
-            return {"message": "Email already registered, please sign in"}
+            raise HTTPException(status_code=400, detail="Email already registered, please sign in")
     password = json_payload.get("password")
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
@@ -104,11 +108,10 @@ async def login(request: Request):
         if user['email'] == email:
             if bcrypt.checkpw(password.encode('utf-8'), user['password']):
                 token = jwt_generator(user['username'])
-                token = jwt_generator(user['username'])
                 return {"message": "Login successful", "token": token}
             else:
-                return {"message": "Invalid password"}
-    return {"message": "User not found"}
+                raise HTTPException(status_code=401, detail="Invalid password")
+    raise HTTPException(status_code=404, detail="User not found")
 
 @app.post("/api/resume-upload")
 async def resumeUpload(file: UploadFile = File(...)):
@@ -194,3 +197,88 @@ def extract_text_from_docx_in_memory(file_content: bytes) -> str:
     for paragraph in doc.paragraphs:
         text += paragraph.text + "\n"
     return text
+
+@app.post("/api/analyze")
+async def analyze(request: Request):
+    print("analyze endpoint has been hit")
+    json_payload = await request.json()
+    resume_text = json_payload.get("resume_text")
+    job_description = json_payload.get("job_description")
+    print("We got the following arguments from the request")
+    print(resume_text)
+    print(job_description)
+    
+    fitscore_url = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+    skill_ner_url = "https://api-inference.huggingface.co/models/nucha/nucha_skillner_bert"
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+
+    fitscore_data = {
+        "inputs": {
+            "source_sentence": resume_text,
+            "sentences": [job_description]
+        }
+    }
+
+    feedback_data = {
+        "inputs": job_description
+    }
+
+    missing_skills = []
+    matched_keywords = []
+
+    async with httpx.AsyncClient() as client:
+        # Fetch similarity score
+        fitscore_response = await client.post(fitscore_url, headers=headers, json=fitscore_data)
+        if fitscore_response.status_code != 200:
+            fitscore_error = fitscore_response.json()
+            print(f"Similarity API Error: {fitscore_error}")
+            raise HTTPException(status_code=fitscore_response.status_code, detail=fitscore_error)
+        fitscore_result = fitscore_response.json()
+        fit_score = fitscore_result[0]
+
+        retries = 5
+        for attempt in range(retries):
+            skill_response = await client.post(skill_ner_url, headers=headers, json=feedback_data)
+            if skill_response.status_code == 200:
+                # Extracting skills from the response
+                skill_result = skill_response.json()
+                print("we got this skill response")
+                print(skill_result)
+                extracted_skills = [skill['word'] for skill in skill_result if skill['entity_group'] == 'B-SKILL']
+
+                # Match extracted skills with the resume and job description
+                for skill in extracted_skills:
+                    if skill.lower() in resume_text.lower():
+                        matched_keywords.append(skill)
+
+                # Find missing skills
+                missing_skills = [
+                    skill.strip()
+                    for skill in extracted_skills
+                    if skill.lower() not in resume_text.lower()
+                ]
+                
+                # Generate feedback based on missing skills
+                feedback_raw = [f"Consider adding skills like {skill}." for skill in missing_skills]
+                if not feedback_raw:
+                    feedback_raw.append("Your resume matches the job description well.")
+                break
+            else:
+                # If the model is still loading, retry after a delay
+                print(f"Model loading, retrying in {2**attempt} seconds...")
+                time.sleep(2**attempt)  # Exponential backoff
+
+        if not feedback_raw:
+            raise HTTPException(status_code=503, detail="Model is taking too long to load or respond.")
+
+    # Prepare final response
+    response = {
+        "similarity_score": round(fit_score * 100, 2),  # Convert similarity to percentage
+        "keywords_matched": matched_keywords,
+        "feedback_raw": feedback_raw
+    }
+
+    print("endpoint response")
+    print(response)
+    # Response
+    return response

@@ -70,7 +70,16 @@ function Dashboard() {
         <Card.Body>
           <Card.Title>Resume Fit Score</Card.Title>
           <h4>{fitScore.total}% Match</h4>
-          <ProgressBar now={fitScore.total} label={`${fitScore.total}%`} />
+          <ProgressBar
+            now={fitScore.total}
+            label={`${fitScore.total}%`}
+            variant="success"  // Green fill color
+            style={{
+              height: '30px', 
+              backgroundColor: '#e0e0e0', // Gray background
+              borderRadius: '5px',
+            }}
+          />
           <div className="mt-3">
             <h6>Skills Breakdown:</h6>
             <PieChart width={300} height={200}>
