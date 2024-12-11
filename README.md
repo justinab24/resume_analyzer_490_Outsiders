@@ -23,6 +23,6 @@ jja55@njit.edu
 
 # Local Setup
 
-For local setup see CONTRIBUTING.md 
+For local setup see SETUP.md 
 
 
