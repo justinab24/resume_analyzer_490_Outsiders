@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import '../stylesheet/resume.css';
 
-const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, setLoading}) => {
-  const navigate = useNavigate();
+const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, setLoading,  setShowDashboard}) => {
   //used later for validation
   const MAX_CHAR_LIMIT = 5000; 
   const MAX_FILE_SIZE = 2 * 1024 * 1024;
@@ -108,6 +107,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
         })  
         setMatchedSkills(analyzeResponse.data.keywords_matched);
         setImprovementSuggestions(analyzeResponse.data.feedback_raw);
+        setShowDashboard(true);
         setLoading(false);
       } else {
         setSubmissionMessage('Failed to submit job description.');
@@ -134,6 +134,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
         {/* Job Description Section */}
         <div>
           <label htmlFor="jobDescription">Job Description:</label>
+          
           <textarea
             id="jobDescription"
             rows="10"

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../stylesheet/signup.css';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -28,7 +29,7 @@ const SignUp = () => {
   return (
     <div>
       <h1>Sign Up</h1>
-      <form onSubmit={handleSubmit}>
+      <form id="signup" onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Email"
