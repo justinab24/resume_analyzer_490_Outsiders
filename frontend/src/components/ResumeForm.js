@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import '../stylesheet/resume.css';
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
-const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, setLoading,  setShowDashboard}) => {
-  //used later for validation
+const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, setLoading, setShowDashboard }) => {
   const MAX_CHAR_LIMIT = 5000; 
   const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
@@ -14,7 +15,9 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
   const [descError, setDescError] = useState('');
   const [submissionMessage, setSubmissionMessage] = useState('');
   const [descWarning, setDescWarning] = useState('');
-  
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+
   const fileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -30,7 +33,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
       }
     }
   };
-  // Check input fields
+
   const jobDescript = (e) => {
     const input = e.target.value;
     const remainingChars = MAX_CHAR_LIMIT - input.length;
@@ -50,14 +53,18 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
     }
   };
 
-  // Form submission
+  const showError = (message) => {
+    setErrorMessage(message);
+    setShowErrorModal(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setLoading(true);
-    // Check for errors before submission
     if (resumeError || descError || !resume || jobDescription.trim() === '') {
       setSubmissionMessage('Errors exist: please fix errors before trying again');
+      setLoading(false);
       return;
     }
 
@@ -65,55 +72,46 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
     formData.append('file', resume);
 
     try {
-      // First, upload the resume to /api/resume-upload
       const resumeResponse = await axios.post('http://localhost:8000/api/resume-upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-  
 
       if (resumeResponse.status !== 200) {
         throw new Error('Failed to upload resume');
       }
 
-      // Now submit the job description to /api/job-description
       const jobDescriptionResponse = await axios.post('http://localhost:8000/api/job-description', 
-        { text: jobDescription }, // Make sure this matches the TextSubmission model
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        { text: jobDescription }, 
+        { headers: { 'Content-Type': 'application/json' } }
       );
+
       if (jobDescriptionResponse.status === 200) {
-        setSubmissionMessage('Submission successful!');
         const analyzeResponse = await axios.post('http://localhost:8000/api/analyze', 
           {
-          resume_text: resumeResponse.data.extracted_text,
-          job_description: jobDescription,
+            resume_text: resumeResponse.data.extracted_text,
+            job_description: jobDescription,
           },
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+
         setFitScore({
           total: analyzeResponse.data.similarity_score,
           matched: 50,
           partial: 15,
           missing: 35,
-        })  
+        });
+
         setMatchedSkills(analyzeResponse.data.keywords_matched);
         setImprovementSuggestions(analyzeResponse.data.feedback_raw);
         setShowDashboard(true);
         setLoading(false);
       } else {
         setSubmissionMessage('Failed to submit job description.');
+        setLoading(false);
       }
     } catch (error) {
-      setSubmissionMessage('Error during submission: ' + error.message);
+      showError('Error during submission: ' + error.message);
+      setLoading(false);
     }
   };
 
@@ -121,7 +119,6 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
     <div>
       <h1>Upload Resume and Job Description</h1>
       <form onSubmit={handleSubmit}>
-
         {/* Resume Upload Section */}
         <div>
           <label htmlFor="resume">Upload Resume (PDF and Docx Only):</label>
@@ -134,7 +131,6 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
         {/* Job Description Section */}
         <div>
           <label htmlFor="jobDescription">Job Description:</label>
-          
           <textarea
             id="jobDescription"
             rows="10"
@@ -154,6 +150,15 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
         <button type="submit">Submit</button>
         {submissionMessage && <div>{submissionMessage}</div>}
       </form>
+
+      {/* Error Popup */}
+      <Popup open={showErrorModal} onClose={() => setShowErrorModal(false)} closeOnDocumentClick>
+        <div className="error-popup">
+          <h2>Error</h2>
+          <p>{errorMessage}</p>
+          <button onClick={() => setShowErrorModal(false)}>Close</button>
+        </div>
+      </Popup>
     </div>
   );
 };

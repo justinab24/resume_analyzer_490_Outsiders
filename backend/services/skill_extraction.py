@@ -88,7 +88,10 @@ async def nlp_analyzer(nlp_input):
         job_skills = [entity for entity in jd_skills_result if entity["entity_group"] == "TECHNOLOGY" or entity["entity_group"] == "TECHNICAL" or entity["entity_group"] == "BUS"]
 
     # Calculate matched skills
-    matched_skills = [skill for skill in resume_skills if skill.lower() in [s["word"].lower() for s in job_skills] and skill.lower() not in matched_skills]
+    matched_skills = []
+    for skill in resume_skills:
+        if skill.lower() in [s["word"].lower() for s in job_skills] and skill.lower() not in [s.lower() for s in matched_skills]:
+            matched_skills.append(skill)
 
     missing_skills = []
     missing_projects = []

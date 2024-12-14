@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
-import { ProgressBar, ListGroup, Card, Button, } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { ProgressBar, ListGroup, Card, Button } from 'react-bootstrap';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import jsPDF from 'jspdf';
 import ResumeForm from './ResumeForm';
 import '../stylesheet/dashboard.css';
-
-
 
 function Dashboard() {
   const [loading, setLoading] = useState(false);
@@ -17,18 +15,34 @@ function Dashboard() {
   });
   const [matchedSkills, setMatchedSkills] = useState([]);
   const [improvementSuggestions, setImprovementSuggestions] = useState([]);
-  const [showDashboard, setShowDashboard] = useState(false);  // Track whether the dashboard should be shown
-  // Pie chart color scheme
+  const [showDashboard, setShowDashboard] = useState(false); // Track whether the dashboard is displayed
+
+  const [chartSize, setChartSize] = useState({
+    width: Math.min(window.innerWidth * 0.8, 300),
+    height: Math.min(window.innerHeight * 0.4, 200),
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setChartSize({
+        width: Math.min(window.innerWidth * 0.8, 300),
+        height: Math.min(window.innerHeight * 0.4, 200),
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+
   const COLORS = ['#28a745', '#ffc107', '#dc3545'];
 
-  // Data for Pie Chart
   const fitData = [
     { name: 'Matched Skills', value: fitScore.matched },
     { name: 'Partial Matches', value: fitScore.partial },
     { name: 'Missing Skills', value: fitScore.missing },
   ];
 
-  // Generate PDF
   const generatePDF = () => {
     const doc = new jsPDF();
     doc.text('Resume Analysis Report', 10, 10);
@@ -46,23 +60,26 @@ function Dashboard() {
 
   return (
     <div className="container my-4">
-      <ResumeForm
-        setFitScore={setFitScore}
-        setMatchedSkills={setMatchedSkills}
-        setImprovementSuggestions={setImprovementSuggestions}
-        setLoading={setLoading}
-        setShowDashboard={setShowDashboard}
-      />
+      {/* Conditionally render ResumeForm or Dashboard */}
+      {!showDashboard && (
+        <ResumeForm
+          setFitScore={setFitScore}
+          setMatchedSkills={setMatchedSkills}
+          setImprovementSuggestions={setImprovementSuggestions}
+          setLoading={setLoading}
+          setShowDashboard={setShowDashboard}
+        />
+      )}
 
-      {/* Conditionally Render Dashboard */}
       {showDashboard && (
-        <>
-          <h2>Resume Analysis Dashboard</h2>
+        <div className="dashboard-wrapper">
+          <div className="dashboard-scrollable">
+            <h2>Resume Analysis Dashboard</h2>
 
-          <Card className="mt-4 mb-4">
-            <Card.Body>
-              <Card.Title>Resume Fit Score</Card.Title>
-              <ProgressBar
+            <Card className="mt-4 mb-4">
+              <Card.Body>
+                <Card.Title>Resume Fit Score</Card.Title>
+                <ProgressBar
                   now={fitScore.total}  // Percentage of progress
                   label={`${fitScore.total}%`}  // Percentage inside the bar
                   style={{
@@ -79,66 +96,72 @@ function Dashboard() {
                   className="custom-progress-bar"
                 />
 
+                <div className="pie-chart-wrapper">
+                  <PieChart width={chartSize.width} height={chartSize.height}>
+                    <Pie
+                      data={fitData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {fitData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </div>
+              </Card.Body>
+            </Card>
 
-              <div className="mt-3">
-                <h6>Skills Breakdown:</h6>
-                <PieChart width={300} height={200}>
-                  <Pie
-                    data={fitData}
-                    cx={150}
-                    cy={100}
-                    innerRadius={40}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {fitData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </div>
-            </Card.Body>
-          </Card>
+            <Card className="mb-4">
+              <Card.Body>
+                <Card.Title>Skills and Keywords Matched</Card.Title>
+                <ListGroup>
+                  {matchedSkills.map((skill, index) => (
+                    <ListGroup.Item key={index}>
+                      <span className="text-success">✔</span> {skill}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              </Card.Body>
+            </Card>
 
-          {/* Skills and Keywords Matched */}
-          <Card className="mb-4">
-            <Card.Body>
-              <Card.Title>Skills and Keywords Matched</Card.Title>
-              <ListGroup>
-                {matchedSkills.map((skill, index) => (
-                  <ListGroup.Item key={index}>
-                    <span className="text-success">✔</span> {skill}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-            </Card.Body>
-          </Card>
+            <Card className="mb-4">
+              <Card.Body>
+                <Card.Title>Improvement Suggestions</Card.Title>
+                <ListGroup>
+                  {improvementSuggestions.map((suggestion, index) => (
+                    <ListGroup.Item key={index}>
+                      <span className="text-danger">⚠</span> {suggestion.message}{' '}
+                      {suggestion.feedback_type}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              </Card.Body>
+            </Card>
 
-          {/* Improvement Suggestions */}
-          <Card className="mb-4">
-            <Card.Body>
-              <Card.Title>Improvement Suggestions</Card.Title>
-              <ListGroup>
-                {improvementSuggestions.map((suggestion, index) => (
-                  <ListGroup.Item key={index}>
-                    <span className="text-danger">⚠</span> {suggestion}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-            </Card.Body>
-          </Card>
-
-          {/* Download PDF Report */}
-          <Button variant="success" onClick={generatePDF} disabled={loading || fitScore.total === 0}>
-            Download PDF Report
-          </Button>
-        </>
+            <div className="d-flex justify-content-between">
+              <Button
+                variant="success"
+                onClick={generatePDF}
+                disabled={loading || fitScore.total === 0}
+              >
+                Download PDF Report
+              </Button>
+              <Button variant="secondary" onClick={() => setShowDashboard(false)}>
+                Go Back
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
-}
+} 
 
 export default Dashboard;
