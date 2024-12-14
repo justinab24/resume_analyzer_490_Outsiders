@@ -71,6 +71,7 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
           'Content-Type': 'multipart/form-data'
         }
       });
+
   
 
       if (resumeResponse.status !== 200) {
@@ -87,17 +88,27 @@ const ResumeForm = ({setFitScore, setMatchedSkills, setImprovementSuggestions, s
         }
       );
       if (jobDescriptionResponse.status === 200) {
-        setLoading(false);
         setSubmissionMessage('Submission successful!');
+        const analyzeResponse = await axios.post('http://localhost:8000/api/analyze', 
+          {
+          resume_text: resumeResponse.data.extracted_text,
+          job_description: jobDescription,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
         setFitScore({
-          total: 61,
+          total: analyzeResponse.data.similarity_score,
           matched: 50,
           partial: 15,
           missing: 35,
-        })
-        setMatchedSkills(['JavaScript', 'React']);
-        setImprovementSuggestions(['Add proficiency in Python.']);
-        setShowDashboard(true); 
+        })  
+        setMatchedSkills(analyzeResponse.data.keywords_matched);
+        setImprovementSuggestions(analyzeResponse.data.feedback_raw);
+        setShowDashboard(true);
+        setLoading(false);
       } else {
         setSubmissionMessage('Failed to submit job description.');
       }

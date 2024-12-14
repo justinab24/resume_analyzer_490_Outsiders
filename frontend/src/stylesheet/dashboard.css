@@ -52,9 +52,7 @@
     background: linear-gradient(135deg, #5680E9,#8860D0);
     transform: translateY(-2px);
   }
-  .container.my-4 {
-   padding:20px;
-}
+  
 
   button:disabled {
     background: #e0e0e0;
