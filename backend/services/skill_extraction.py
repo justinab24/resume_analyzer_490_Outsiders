@@ -3,13 +3,43 @@ from fastapi import FastAPI, File, Request, UploadFile, Form, HTTPException
 from services.models import FeedbackItem, NLPInput, NLPOutput
 from utils.parsing import split_description_by_headers
 from pydantic import BaseModel
+from nltk.corpus import stopwords
 import os
 import httpx
 import time
+import re
+from collections import Counter
 
 
 load_dotenv(dotenv_path="./backend/.env")
 HF_API_KEY = os.getenv("HF_API_KEY")
+
+STOP_WORDS = set(stopwords.words("english"))
+
+def extract_missing_keywords(resume_text, job_description):
+   
+    def tokenize(text):
+        return re.findall(r'\b\w+\b', text.lower())
+
+    resume_tokens = tokenize(resume_text)
+    job_tokens = tokenize(job_description)
+
+    filtered_resume_tokens = [token for token in resume_tokens if token not in STOP_WORDS]
+    filtered_job_tokens = [token for token in job_tokens if token not in STOP_WORDS]
+
+    missing_keywords = [
+        word for word in filtered_job_tokens if word not in filtered_resume_tokens
+    ]
+
+    suggestions = [
+        f"Include skills or experience related to '{keyword}'."
+        for keyword in missing_keywords
+    ]
+
+    return {
+        "missing_keywords": missing_keywords,
+        "suggestions": suggestions
+    }
 
 async def nlp_analyzer(nlp_input):
     print("We got the following arguments from the request")
@@ -88,6 +118,7 @@ async def nlp_analyzer(nlp_input):
         job_skills = [entity for entity in jd_skills_result if entity["entity_group"] == "TECHNOLOGY" or entity["entity_group"] == "TECHNICAL" or entity["entity_group"] == "BUS"]
 
     # Calculate matched skills
+    matched_skills = []
     matched_skills = [skill for skill in resume_skills if skill.lower() in [s["word"].lower() for s in job_skills] and skill.lower() not in matched_skills]
 
     missing_skills = []
@@ -147,6 +178,9 @@ async def nlp_analyzer(nlp_input):
                         "weight": "neither"
                     })    
     # # Calculate missing skills
+    analysis_result = extract_missing_keywords(resume_text, job_description)
+
+
     # missing_skills = [entity["word"] for entity in job_skills if entity["entity_group"] == "TECHNOLOGY" and entity["word"].lower() not in [s.lower() for s in resume_skills]]
 
     # # Calculate missing technology
@@ -154,7 +188,10 @@ async def nlp_analyzer(nlp_input):
     
     # missing_experience = [entity["word"] for entity in job_skills if entity["entity_group"] == "BUS" and entity["word"].lower() not in [s.lower() for s in resume_skills]]
     # Prepare feedback message for missing skills
-    feedback = []
+    feedback = [
+        FeedbackItem(message=suggestion, feedback_type="skills")
+        for suggestion in analysis_result["suggestions"]
+    ]
 
     for skill in missing_skills:
         feedback_message = f"Consider adding {skill['name']} ({skill['weight']}) to your skills."
@@ -184,6 +221,7 @@ async def nlp_analyzer(nlp_input):
     response = {
         "similarity_score": round(fit_score * 100, 2),
         "keywords_matched": matched_skills,
+        "missing_keywords": analysis_result["missing_keywords"],
         "feedback_raw": feedback,
     }
 

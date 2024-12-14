@@ -158,13 +158,12 @@ async def calculate_fit_score_endpoint(
             detail=f"An error occurred during fit score calculation: {str(e)}"
         )
     
-@app.post("/api/analyze")
-async def analyze(request: Request):
-    print("analyze endpoint has been hit")
-    json_payload = await request.json()
-    resume_text = json_payload.get("resume_text")
-    job_description = json_payload.get("job_description")
-    nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
-    nlp_output = NLPOutput(similarity_score=0.0, keywords_matched=[], feedback_raw=[])
-    nlp_output = await nlp_analyzer(nlp_input)
-    return nlp_output
+@app.post("/api/analyze", response_model=NLPOutput)
+async def analyze(nlp_input: NLPInput):
+    try:
+        print("analyze endpoint has been hit")
+        # Call the nlp_analyzer function
+        nlp_output = await nlp_analyzer(nlp_input)
+        return nlp_output  # FastAPI will serialize the output
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
