@@ -46,8 +46,9 @@
   }
   
   #jobDescription {
-    width: 874px;
-    height: 366px;
+    width: 100%;
+    height: auto;
+    min-height: 150px;
     resize:both;
     border: 1px solid #5AB9EA;
     border-radius: 5px;
