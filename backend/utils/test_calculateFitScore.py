@@ -1,5 +1,5 @@
 import unittest
-from calculateFitScore import calculate_fit_score  # Replace 'your_module' with the file name of your implementation.
+from calculateFitScore import calculate_fit_score 
 from calculateFitScore import preprocess_text
 
 class TestCalculateFitScore(unittest.TestCase):

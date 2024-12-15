@@ -17,12 +17,23 @@ const SignUp = () => {
         password,
       });
       setMessage(response.data.message);
-
+  
       if (response.data.message === 'User registered successfully') {
         navigate('/dashboard'); // Navigate to the dashboard
       }
     } catch (error) {
-      setMessage(error.response.data.detail || 'Error registering user');
+      console.error('Error details:', error); // Log the error details for debugging
+      let errorMessage;
+      if (error.response) {
+        errorMessage = error.response.data && error.response.data.detail 
+          ? error.response.data.detail 
+          : error.response.statusText || 'Error registering user';
+      } else if (error.request) {
+        errorMessage = 'Network error: Please check your connection or try again later.';
+      } else {
+        errorMessage = error.message || 'An unexpected error occurred';
+      }
+      setMessage(errorMessage);
     }
   };
 
