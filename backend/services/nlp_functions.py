@@ -54,7 +54,9 @@ async def nlp_simscore(resume_text, job_description):
             print(f"Similarity API Error: {simscore_error}")
             raise HTTPException(status_code=simscore_response.status_code, detail=simscore_error)
         simscore_result = simscore_response.json()
-        sim_score = simscore_result[0]
+        print("We got the following sim score")
+        print(simscore_result)
+        sim_score = round(simscore_result[0] * 100, 1)
         return sim_score
 
 async def nlp_skill_extraction(text):
@@ -86,9 +88,9 @@ def openai_analysis(resume_text, job_description):
     prompt = f"""
         I have a resume and a job description. I need you to compare the skills in the resume against the skills required in the job description.
         Please provide:
-        1. An array of skills that match between the resume and job description.
+        1. An array of skills that are common between the resume and job description.
         2. An array of objects that have a name and type field. Each object’s name should be a skill (just one word ie. teamwork, python, telemetry) that is in the job description but not the resume, and the type should be whether the skill is a required or preferred skill as per the job description.
-        3. An array of feedback for improving the resume. This can cover skills, projects, experience, etc.
+        3. An array of feedback for improving the resume. This can cover skills, projects, experience, etc. Ensure the feedback isnt already on the resume
 
         Format your response as a json object like:
 

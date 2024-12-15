@@ -63,7 +63,8 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
 
     setLoading(true);
     if (resumeError || descError || !resume || jobDescription.trim() === '') {
-      setSubmissionMessage('Errors exist: please fix errors before trying again');
+      setErrorMessage('Please ensure resume is uploaded and job description is filled out.');
+      setShowErrorModal(true);
       setLoading(false);
       return;
     }
@@ -168,7 +169,7 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
       {/* Error Popup */}
       <Popup open={showErrorModal} onClose={() => setShowErrorModal(false)} closeOnDocumentClick>
         <div className="error-popup">
-          <h2>Error</h2>
+          <h2>!!!</h2>
           <p>{errorMessage}</p>
           <button onClick={() => setShowErrorModal(false)}>Close</button>
         </div>
