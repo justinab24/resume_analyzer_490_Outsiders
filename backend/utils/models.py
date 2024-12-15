@@ -14,4 +14,4 @@ class NLPInput(BaseModel):
 class NLPOutput(BaseModel):
     similarity_score: float
     keywords_matched: list[str]
-    feedback_raw: list[FeedbackItem]
+    feedback_raw: list[str]

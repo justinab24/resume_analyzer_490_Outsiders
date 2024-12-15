@@ -87,7 +87,7 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
       );
 
       if (jobDescriptionResponse.status === 200) {
-        const analyzeResponse = await axios.post('http://localhost:8000/api/analyze', 
+        const analyzeResponse = await axios.post('http://localhost:8000/api/fit-score', 
           {
             resume_text: resumeResponse.data.extracted_text,
             job_description: jobDescription,
