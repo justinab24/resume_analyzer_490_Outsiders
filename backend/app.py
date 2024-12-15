@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, Request, UploadFile, Form, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from services.skill_extraction import nlp_analyzer
+from services.calculate_fit_score import calculate_fit_score
 from services.authentication import register_user, login_user, jwt_generator
 from utils.parsing import extract_text_from_pdf_in_memory, extract_text_from_docx_in_memory
 from fastapi.responses import JSONResponse
@@ -115,46 +116,35 @@ async def descriptionUpload(submission: TextSubmission):
         content={"message": "Text submitted successfully", "character_count": len(submission.text)}
     )
 
-def calculate_fit_score(resume_text, job_description):
-    # Tokenize and normalize text
-    def tokenize(text):
-        return re.findall(r'\b\w+\b', text.lower())
-
-    resume_tokens = tokenize(resume_text)
-    job_tokens = tokenize(job_description)
-
-    # Count matching keywords
-    resume_counter = Counter(resume_tokens)
-    job_counter = Counter(job_tokens)
-
-    matches = sum((resume_counter & job_counter).values())
-    total_keywords = len(job_tokens)
-
-    return int((matches / total_keywords) * 100) if total_keywords > 0 else 0
-
 @app.post("/api/calculate-fit-score")
 async def calculate_fit_score_endpoint(
-    resume_text: str = Form(...), 
+    resume_text: str = Form(...),
     job_description: str = Form(...)
 ):
-    
+    """
+    Endpoint to calculate fit score based on resume and job description. Uses NLP analysis and keyword matching.
+    """
     if not resume_text.strip() or not job_description.strip():
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Both resume text and job description must be provided."
         )
-
     try:
-        fit_score = calculate_fit_score(resume_text, job_description)
+        # Call the updated calculate_fit_score function
+        result = await calculate_fit_score(resume_text, job_description)
+        
+        # Return results
         return JSONResponse(
             content={
                 "message": "Fit score calculated successfully.",
-                "fit_score": fit_score
+                "fit_score": result["fit_score"],
+                "similarity_score": result["similarity_score"],
+                "feedback": result["feedback"],
             }
         )
     except Exception as e:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"An error occurred during fit score calculation: {str(e)}"
         )
     
