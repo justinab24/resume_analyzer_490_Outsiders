@@ -53,39 +53,40 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
     }
   };
 
-  // const showError = (message) => {
-  //   setErrorMessage(message);
-  //   setShowErrorModal(true);
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // Immediately set loading to true
     setLoading(true);
+    
+    // Reset any previous error states
+    setErrorMessage('');
+    setShowErrorModal(false);
+  
     if (resumeError || descError || !resume || jobDescription.trim() === '') {
       setErrorMessage('Please ensure resume is uploaded and job description is filled out.');
       setShowErrorModal(true);
       setLoading(false);
       return;
     }
-
+  
     const formData = new FormData();
     formData.append('file', resume);
-
+  
     try {
       const resumeResponse = await axios.post('http://localhost:8000/api/resume-upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
+  
       if (resumeResponse.status !== 200) {
         throw new Error('Failed to upload resume');
       }
-
+  
       const jobDescriptionResponse = await axios.post('http://localhost:8000/api/job-description', 
         { text: jobDescription }, 
         { headers: { 'Content-Type': 'application/json' } }
       );
-
+  
       if (jobDescriptionResponse.status === 200) {
         const analyzeResponse = await axios.post('http://localhost:8000/api/fit-score', 
           {
@@ -94,41 +95,38 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
           },
           { headers: { 'Content-Type': 'application/json' } }
         );
-
+  
         setFitScore({
           total: analyzeResponse.data.similarity_score,
           matched: 50,
           partial: 15,
           missing: 35,
         });
-
+  
         setMatchedSkills(analyzeResponse.data.keywords_matched);
         setImprovementSuggestions(analyzeResponse.data.feedback_raw);
         setShowDashboard(true);
-        setLoading(false);
       } else {
         setSubmissionMessage('Failed to submit job description.');
-        setLoading(false);
+        throw new Error('Job description submission failed');
       }
     } catch (error) {
       if (error.response) {
-        // Check if there's a response and it's a 503 Service Unavailable error
         if (error.response.status === 503) {
           setErrorMessage('Server is unavailable (503). Please refresh the page and try again.');
         } else {
           setErrorMessage('Error during submission: ' + error.message);
         }
       } else if (error.message === 'Network Error') {
-        // Handle network errors (no response object)
-        setErrorMessage('Server Network error.Please refresh the page and try again.');
+        setErrorMessage('Server Network error. Please refresh the page and try again.');
       } else {
-        // Handle any other errors
         setErrorMessage('An unexpected error occurred: ' + error.message);
       }
       setShowErrorModal(true);
+    } finally {
+      // Ensure loading is set to false in all scenarios
       setLoading(false);
     }
-    
   };
 
   return (

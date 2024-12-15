@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import SignUp from './components/SignUp';
 import Login from './components/Login';
@@ -9,6 +9,8 @@ import '../node_modules/reactjs-popup/dist/index.css';
 
 
 function App() {
+  const [loading, setLoading] = useState(false);
+
   return (
     <Router>
       <Routes>

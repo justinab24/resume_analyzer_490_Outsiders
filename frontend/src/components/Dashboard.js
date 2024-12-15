@@ -3,6 +3,7 @@ import { ProgressBar, ListGroup, Card, Button } from 'react-bootstrap';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import jsPDF from 'jspdf';
 import ResumeForm from './ResumeForm';
+import Spinner from './Spinner';
 import '../stylesheet/dashboard.css';
 
 function Dashboard() {
@@ -15,8 +16,7 @@ function Dashboard() {
   });
   const [matchedSkills, setMatchedSkills] = useState([]);
   const [improvementSuggestions, setImprovementSuggestions] = useState([]);
-  const [showDashboard, setShowDashboard] = useState(false); // Track whether the dashboard is displayed
-
+  const [showDashboard, setShowDashboard] = useState(false);
   const [chartSize, setChartSize] = useState({
     width: Math.min(window.innerWidth * 0.8, 300),
     height: Math.min(window.innerHeight * 0.4, 200),
@@ -29,14 +29,11 @@ function Dashboard() {
         height: Math.min(window.innerHeight * 0.4, 200),
       });
     };
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-
   const COLORS = ['#28a745', '#ffc107', '#dc3545'];
-
   const fitData = [
     { name: 'Matched Skills', value: fitScore.matched },
     { name: 'Partial Matches', value: fitScore.partial },
@@ -60,7 +57,7 @@ function Dashboard() {
 
   return (
     <div id="dash" className="container my-5">
-      {/* Conditionally render ResumeForm or Dashboard */}
+      {loading && <Spinner />}
       {!showDashboard && (
         <ResumeForm
           setFitScore={setFitScore}
@@ -70,32 +67,29 @@ function Dashboard() {
           setShowDashboard={setShowDashboard}
         />
       )}
-
       {showDashboard && (
         <div className="dashboard-wrapper">
           <div className="dashboard-scrollable">
             <h2>Resume Analysis Dashboard</h2>
-
             <Card className="mt-4 mb-4">
               <Card.Body>
                 <Card.Title>Resume Fit Score</Card.Title>
                 <ProgressBar
-                  now={fitScore.total}  // Percentage of progress
-                  label={`${fitScore.total}%`}  // Percentage inside the bar
+                  now={fitScore.total}
+                  label={`${fitScore.total}%`}
                   style={{
                     height: '20px',
-                    backgroundColor: '#f4f4f4',  // Empty portion
-                    width: `${fitScore.total}%`,  // Dynamic width based on fitScore.total
-                    background: 
-                      fitScore.total === 100 ? 'linear-gradient(135deg, #007bff, #0056b3)' : // Blue for 100%
-                      fitScore.total <= 30 ? 'linear-gradient(135deg, #dc3545, #c82333)' :     // Red for <= 30%
-                      fitScore.total <= 60 ? 'linear-gradient(135deg, #ffc107, #e0a800)' :    // Yellow for 31-60%
-                      'linear-gradient(135deg, #28a745, #218838)',  // Green for > 60%
+                    backgroundColor: '#f4f4f4',
+                    width: `${fitScore.total}%`,
+                    background:
+                      fitScore.total === 100 ? 'linear-gradient(135deg, #007bff, #0056b3)' :
+                      fitScore.total <= 30 ? 'linear-gradient(135deg, #dc3545, #c82333)' :
+                      fitScore.total <= 60 ? 'linear-gradient(135deg, #ffc107, #e0a800)' :
+                      'linear-gradient(135deg, #28a745, #218838)',
                     transition: 'background 0.3s ease, width 0.3s ease',
                   }}
                   className="custom-progress-bar"
                 />
-
                 <div className="pie-chart-wrapper">
                   <PieChart width={chartSize.width} height={chartSize.height}>
                     <Pie
@@ -117,7 +111,6 @@ function Dashboard() {
                 </div>
               </Card.Body>
             </Card>
-
             <Card className="mb-4">
               <Card.Body>
                 <Card.Title>Skills and Keywords Matched</Card.Title>
@@ -130,21 +123,18 @@ function Dashboard() {
                 </ListGroup>
               </Card.Body>
             </Card>
-
             <Card className="mb-4">
               <Card.Body>
                 <Card.Title>Improvement Suggestions</Card.Title>
                 <ListGroup>
                   {improvementSuggestions.map((suggestion, index) => (
                     <ListGroup.Item key={index}>
-                      <span className="text-danger">⚠</span> {suggestion}{' '}
-                      {suggestion.feedback_type}
+                      <span className="text-danger">⚠</span> {suggestion}
                     </ListGroup.Item>
                   ))}
                 </ListGroup>
               </Card.Body>
             </Card>
-
             <div className="d-flex justify-content-between">
               <Button
                 variant="success"
@@ -162,6 +152,6 @@ function Dashboard() {
       )}
     </div>
   );
-} 
+}
 
 export default Dashboard;
