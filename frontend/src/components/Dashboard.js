@@ -42,19 +42,87 @@ function Dashboard() {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-    doc.text('Resume Analysis Report', 10, 10);
-    doc.text(`Fit Score: ${fitScore.total}%`, 10, 20);
-    doc.text('Matched Keywords:', 10, 30);
-    matchedSkills.forEach((keyword, index) => {
-      doc.text(`- ${keyword}`, 10, 40 + index * 10);
-    });
-    doc.text('Improvement Suggestions:', 10, 60 + matchedSkills.length * 10);
-    improvementSuggestions.forEach((suggestion, index) => {
-      doc.text(`- ${suggestion}`, 10, 70 + matchedSkills.length * 10 + index * 10);
-    });
-    doc.save('Resume_Analysis_Report.pdf');
-  };
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 10;
+    const maxWidth = pageWidth - margin * 2; // Calculate usable width
+    let yPosition = 20; // Starting y position after header
 
+    // Header styling
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255); // White text for header
+    doc.setFillColor(86, 128, 233); // #5680E9
+    doc.rect(0, 0, pageWidth, 15, 'F');
+    doc.text('Resume Analysis Report', pageWidth / 2, 10, { align: 'center' });
+
+    // Utility function for creating a box with a shadow
+    const drawBoxWithShadow = (x, y, width, height, shadowColor, fillColor) => {
+        doc.setFillColor(...shadowColor); // Shadow color
+        doc.rect(x + 1, y + 1, width, height, 'F'); // Shadow
+        doc.setFillColor(...fillColor); // Box color
+        doc.rect(x, y, width, height, 'F'); // Box
+    };
+
+    // Fit Score Section
+    const fitScoreHeight = 20;
+    doc.setFontSize(14);
+    doc.setTextColor(136, 96, 208); // #8860D0 for subheading
+    doc.text('Fit Score', margin, yPosition);
+    yPosition += 5;
+
+    drawBoxWithShadow(margin, yPosition, maxWidth, fitScoreHeight, [132, 206, 235],  [232, 232, 232]); // Shadow #84CEEB, Fill #5AB9EA
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Black text
+    doc.text(`Fit Score: ${fitScore.total}%`, margin + 5, yPosition + 12);
+    yPosition += fitScoreHeight + 10;
+
+    // Matched Keywords Section
+    doc.setTextColor(136, 96, 208); // #8860D0 for subheading
+    doc.setFontSize(14);
+    doc.text('Matched Keywords', margin, yPosition);
+    yPosition += 5;
+
+    const keywordsHeight = 40 + matchedSkills.length * 10;
+    drawBoxWithShadow(margin, yPosition, maxWidth, keywordsHeight, [140, 140, 140] , [232, 232, 232]); // Shadow #84CEEB, Fill #5AB9EA
+    yPosition += 10;
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Black text
+    matchedSkills.forEach((keyword) => {
+        const wrappedKeyword = doc.splitTextToSize(`- ${keyword}`, maxWidth - 10);
+        wrappedKeyword.forEach((line) => {
+            doc.text(line, margin + 5, yPosition);
+            yPosition += 10;
+        });
+    });
+    yPosition += 10;
+
+    // Improvement Suggestions Section
+    doc.setTextColor(136, 96, 208); // #8860D0 for subheading
+    doc.setFontSize(14);
+    doc.text('Improvement Suggestions', margin, yPosition);
+    yPosition += 5;
+
+    const suggestionsHeight = 40 + improvementSuggestions.length * 10;
+    drawBoxWithShadow(margin, yPosition, maxWidth, suggestionsHeight, [140, 140, 140] , [232, 232, 232]); // Shadow #84CEEB, Fill #5AB9EA
+    yPosition += 10;
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Black text
+    improvementSuggestions.forEach((suggestion) => {
+        const wrappedSuggestion = doc.splitTextToSize(`- ${suggestion}`, maxWidth - 10);
+        wrappedSuggestion.forEach((line) => {
+            doc.text(line, margin + 5, yPosition);
+            yPosition += 10;
+        });
+    });
+
+    // Save PDF
+    doc.save('Resume_Analysis_Report.pdf');
+};
+
+
+ 
   return (
     <div id="dash" className="container my-5">
       {loading && <Spinner />}
