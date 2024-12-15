@@ -21,6 +21,11 @@ function Dashboard() {
     width: Math.min(window.innerWidth * 0.8, 300),
     height: Math.min(window.innerHeight * 0.4, 200),
   });
+  const [filter, setFilter] = useState('all');
+
+  const filteredFeedback = improvementSuggestions.filter((item) =>
+    filter === 'all' ? true : item.category === filter
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -126,10 +131,15 @@ function Dashboard() {
             <Card className="mb-4">
               <Card.Body>
                 <Card.Title>Improvement Suggestions</Card.Title>
+                <select onChange={(e) => setFilter(e.target.value)}>
+                  <option value="all">All</option>
+                  <option value="skills">Skills</option>
+                  <option value="experience">Experience</option>
+                </select>
                 <ListGroup>
-                  {improvementSuggestions.map((suggestion, index) => (
+                  {filteredFeedback.map((suggestion, index) => (
                     <ListGroup.Item key={index}>
-                      <span className="text-danger">⚠</span> {suggestion}
+                      <span className="text-danger">⚠</span> {suggestion.text}
                     </ListGroup.Item>
                   ))}
                 </ListGroup>
