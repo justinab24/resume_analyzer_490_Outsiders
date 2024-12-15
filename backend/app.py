@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, Request, UploadFile, Form, HTTPException
 from starlette.middleware.cors import CORSMiddleware
-from services.skill_extraction import nlp_analyzer
+from services.nlp_functions import nlp_analysis
 from services.authentication import register_user, login_user, jwt_generator
 from utils.parsing import extract_text_from_pdf_in_memory, extract_text_from_docx_in_memory
 from fastapi.responses import JSONResponse
@@ -11,12 +11,20 @@ import httpx
 import bcrypt
 import jwt
 import pdfplumber
+import json
 import os
 import io
 import docx
 import re
+from openai import OpenAI
 from collections import Counter
 import time
+
+client = OpenAI(
+    api_key = os.getenv("OPEN_AI_KEY")
+)
+
+
 
 #python3 -m uvicorn app:app --reload to run the api
 #http://127.0.0.1:8000/docs for easy testing of the api - use try it out button
@@ -166,5 +174,5 @@ async def analyze(request: Request):
     job_description = json_payload.get("job_description")
     nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
     nlp_output = NLPOutput(similarity_score=0.0, keywords_matched=[], feedback_raw=[])
-    nlp_output = await nlp_analyzer(nlp_input)
+    nlp_output = await nlp_analysis(nlp_input)
     return nlp_output

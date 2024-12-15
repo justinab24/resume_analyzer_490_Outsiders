@@ -129,7 +129,7 @@ function Dashboard() {
                 <ListGroup>
                   {improvementSuggestions.map((suggestion, index) => (
                     <ListGroup.Item key={index}>
-                      <span className="text-danger">⚠</span> {suggestion.message}{' '}
+                      <span className="text-danger">⚠</span> {suggestion}{' '}
                       {suggestion.feedback_type}
                     </ListGroup.Item>
                   ))}

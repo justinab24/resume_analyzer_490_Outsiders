@@ -21,7 +21,7 @@ def extract_text_from_docx_in_memory(file_content: bytes) -> str:
 def split_description_by_headers(description):
     # Define flexible header patterns for required, preferred, and other common headers
     header_patterns = {
-        "required": re.compile(r"(?i)\b(required skills|must-have|essential|mandatory|minimum qualifications)\b"),
+        "required": re.compile(r"(?i)\b(required skills|must-have|essential|mandatory|minimum qualifications|basic qualifications|)\b"),
         "preferred": re.compile(r"(?i)\b(preferred qualifications|nice to have|bonus|desired skills)\b"),
     }
 
@@ -39,19 +39,15 @@ def split_description_by_headers(description):
         
         if current_header == None:
             for header, pattern in header_patterns.items():
-                print(f"Checking line against pattern: {line} -> {pattern}")
                 if pattern.search(line):
                     current_header = header
                     break;
         else:
-            print("Current header: ", current_header, "Line: ", line)
-            print(blankNum)
             if not line:
                 blankNum += 1
             else:
                 section_text += line + " "
             if blankNum > 1:
-                print("Blank number: ", blankNum, "Section text: ", section_text)
                 sections[current_header] = section_text
                 section_text = ""
                 blankNum = 0
