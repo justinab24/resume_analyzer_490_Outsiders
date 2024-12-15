@@ -53,10 +53,10 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
     }
   };
 
-  const showError = (message) => {
-    setErrorMessage(message);
-    setShowErrorModal(true);
-  };
+  // const showError = (message) => {
+  //   setErrorMessage(message);
+  //   setShowErrorModal(true);
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -110,14 +110,28 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
         setLoading(false);
       }
     } catch (error) {
-      showError('Error during submission: ' + error.message);
+      if (error.response) {
+        // Check if there's a response and it's a 503 Service Unavailable error
+        if (error.response.status === 503) {
+          setErrorMessage('Server is unavailable (503). Please refresh the page and try again.');
+        } else {
+          setErrorMessage('Error during submission: ' + error.message);
+        }
+      } else if (error.message === 'Network Error') {
+        // Handle network errors (no response object)
+        setErrorMessage('Server Network error.Please refresh the page and try again.');
+      } else {
+        // Handle any other errors
+        setErrorMessage('An unexpected error occurred: ' + error.message);
+      }
+      setShowErrorModal(true);
       setLoading(false);
     }
+    
   };
 
   return (
     <div>
-      <h1>Upload Resume and Job Description</h1>
       <form onSubmit={handleSubmit}>
         {/* Resume Upload Section */}
         <div>
