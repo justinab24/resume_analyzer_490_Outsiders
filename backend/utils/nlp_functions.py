@@ -10,12 +10,11 @@ import time
 from openai import OpenAI
 import re
 
+load_dotenv()
 
 client = OpenAI(
-    api_key = os.getenv("OPEN_AI_KEY")
+    api_key = os.getenv("OPENAI_AI_KEY")
 )
-
-
 
 load_dotenv(dotenv_path="./backend/.env")
 HF_API_KEY = os.getenv("HF_API_KEY")
