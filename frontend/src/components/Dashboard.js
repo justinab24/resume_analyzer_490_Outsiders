@@ -59,7 +59,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="container my-4">
+    <div id="dash" className="container my-5">
       {/* Conditionally render ResumeForm or Dashboard */}
       {!showDashboard && (
         <ResumeForm
@@ -80,14 +80,22 @@ function Dashboard() {
               <Card.Body>
                 <Card.Title>Resume Fit Score</Card.Title>
                 <ProgressBar
-                  now={fitScore.total}
-                  label={`${fitScore.total}%`}
+                  now={fitScore.total}  // Percentage of progress
+                  label={`${fitScore.total}%`}  // Percentage inside the bar
                   style={{
                     height: '20px',
+                    backgroundColor: '#f4f4f4',  // Empty portion
+                    width: `${fitScore.total}%`,  // Dynamic width based on fitScore.total
+                    background: 
+                      fitScore.total === 100 ? 'linear-gradient(135deg, #007bff, #0056b3)' : // Blue for 100%
+                      fitScore.total <= 30 ? 'linear-gradient(135deg, #dc3545, #c82333)' :     // Red for <= 30%
+                      fitScore.total <= 60 ? 'linear-gradient(135deg, #ffc107, #e0a800)' :    // Yellow for 31-60%
+                      'linear-gradient(135deg, #28a745, #218838)',  // Green for > 60%
                     transition: 'background 0.3s ease, width 0.3s ease',
                   }}
                   className="custom-progress-bar"
                 />
+
                 <div className="pie-chart-wrapper">
                   <PieChart width={chartSize.width} height={chartSize.height}>
                     <Pie

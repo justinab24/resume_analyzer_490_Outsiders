@@ -13,7 +13,9 @@
 .custom-progress-bar .progress-bar[variant="custom"] {
   background-color: #f4f4f4;
 }
-
+.container.my-5 {
+  padding-right: 8%;
+}
 /* Card Styles */
 .card {
   border: none;
@@ -22,10 +24,23 @@
   overflow: hidden;
   margin-bottom: 20px;
 }
+/* Add spacing for top and bottom (mt-4 and mb-4) */
+.mt-4 {
+  margin-top: 16px;
 
+}
+.ml-4 {
+  margin-left: 16px;
+}
+
+.mr-4 {
+  margin-right: 16px;
+}
+.mb-4 {
+  margin-bottom: 16px;
+}
 .card-body {
   padding: 20px;
-  background: #f8f9fa;
 }
 
 .card-title {
@@ -51,6 +66,7 @@ button:hover {
   background: linear-gradient(135deg, #5680E9,#8860D0);
   transform: translateY(-2px);
 }
+
 
 button:disabled {
   background: #e0e0e0;
@@ -105,29 +121,14 @@ button:disabled {
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
-      padding: 15px;
+    padding: 15px;
   }
 
   .card-title {
-      font-size: 1.25rem;
+    font-size: 1.25rem;
   }
 
   button {
-      font-size: 0.9rem;
+    font-size: 0.9rem;
   }
-}
-
-.dashboard-wrapper {
-  height: 100%; /* Ensures it takes the full height of the parent */
-  display: flex;
-  flex-direction: column;
-}
-
-.dashboard-scrollable {
-  max-height: calc(100vh - 100px); /* Adjust based on header/footer height */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding: 20px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
-  background: #ffffff;
-  border-radius: 10px;
 }
