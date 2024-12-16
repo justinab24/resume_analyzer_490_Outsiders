@@ -16,8 +16,17 @@
 
 ---
 # Running the project without Docker
+- **Frontend**
  - Naviagte to frontend folder
  - Once you are in the frontend folder run 'npm install'
+ - Run 'npm start'after previous step complete
+ 
+
+ - **Backend**
+ - Open a new terminal
+ - Navigate to the backend folder
+ - Once you are in the backend foldr run 'pip install -r requirements.txt'
+ - Wait for it to finish, then run 'python -m uvicorn app:app --reload'
 
  ---
 
