@@ -112,7 +112,7 @@ function Dashboard() {
    doc.setFontSize(12);
    doc.setTextColor(0, 0, 0); 
    improvementSuggestions.forEach((suggestion) => {
-     const wrappedSuggestion = doc.splitTextToSize(`- ${suggestion}`, maxWidth - 10);
+     const wrappedSuggestion = doc.splitTextToSize(`- ${suggestion.text}`, maxWidth - 10);
      wrappedSuggestion.forEach((line) => {
        doc.text(line, margin + 5, yPosition);
        yPosition += 10;
@@ -195,7 +195,7 @@ function Dashboard() {
             <Card.Body>
               <Card.Title>Improvement Suggestions</Card.Title>
               <Form.Group controlId="filterSelect">
-                <Form.Label>Filter by Category</Form.Label>
+                <Form.Label style={{ fontSize: '12px' }}>Filter by Category</Form.Label>
                 <Form.Control as="select" className="custom-dropdown" onChange={(e) => setFilter(e.target.value)}>
                   <option value="all">All</option>
                   <option value="skills">Skills</option>
