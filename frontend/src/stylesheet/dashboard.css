@@ -16,6 +16,9 @@
 
 .container.my-5 {
   padding-right: 8%;
+  height: 600px; /* Set a fixed height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling (optional) */
 }
 
 /* Card Styles */

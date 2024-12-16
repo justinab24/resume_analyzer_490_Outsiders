@@ -9,7 +9,7 @@ import '../node_modules/reactjs-popup/dist/index.css';
 
 
 function App() {
-  const [loading, setLoading] = useState(false);
+  //const [loading, setLoading] = useState(false);
 
   return (
     <Router>

@@ -50,21 +50,80 @@ function Dashboard() {
     { name: 'Missing Skills', value: fitScore.missing },
   ];
 
+  //pdf styling section
   const generatePDF = () => {
     const doc = new jsPDF();
-    doc.text('Resume Analysis Report', 10, 10);
-    doc.text(`Fit Score: ${fitScore.total}%`, 10, 20);
-    doc.text('Matched Keywords:', 10, 30);
-    matchedSkills.forEach((keyword, index) => {
-      doc.text(`- ${keyword}`, 10, 40 + index * 10);
-    });
-    doc.text('Improvement Suggestions:', 10, 60 + matchedSkills.length * 10);
-    improvementSuggestions.forEach((suggestion, index) => {
-      doc.text(`- ${suggestion}`, 10, 70 + matchedSkills.length * 10 + index * 10);
-    });
-    doc.save('Resume_Analysis_Report.pdf');
-  };
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 10;
+    const maxWidth = pageWidth - margin * 2; 
+    let yPosition = 20; // Starting y position after header
+  
+    // Header styling
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255); 
+    doc.setFillColor(86, 128, 233); 
+    doc.rect(0, 0, pageWidth, 15, 'F');
+    doc.text('Resume Analysis Report', pageWidth / 2, 10, { align: 'center' });
+  
+    const drawBoxWithShadow = (x, y, width, height, shadowColor, fillColor) => {
+      doc.setFillColor(...shadowColor);
+      doc.rect(x + 1, y + 1, width, height, 'F'); 
+      doc.setFillColor(...fillColor); 
+      doc.rect(x, y, width, height, 'F'); 
+    };
+  
+    // Fit Score Section
+    const fitScoreHeight = 20;
+    doc.setFontSize(14);
+    doc.setTextColor(136, 96, 208);
+    doc.text('Fit Score', margin, yPosition);
+    yPosition += 5;
+  
+    drawBoxWithShadow(margin, yPosition, maxWidth, fitScoreHeight, [132, 206, 235], [244, 244, 244]); 
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Fit Score: ${fitScore.total}%`, margin + 5, yPosition + 12);
+    yPosition += fitScoreHeight + 10;
+   // Matched Keywords Section (without box)
+   doc.setTextColor(136, 96, 208); 
+   doc.setFontSize(14);
+   doc.text('Matched Keywords', margin, yPosition);
+   yPosition += 10;
+ 
+   doc.setFontSize(12);
+   doc.setTextColor(0, 0, 0); 
+   matchedSkills.forEach((keyword) => {
+     const wrappedKeyword = doc.splitTextToSize(`- ${keyword}`, maxWidth - 10);
+     wrappedKeyword.forEach((line) => {
+       doc.text(line, margin + 5, yPosition);
+       yPosition += 10;
+     });
+   });
+ 
+   yPosition += 10;
+ 
+   // Improvement Suggestions Section (without box)
+   doc.setTextColor(136, 96, 208); 
+   doc.setFontSize(14);
+   doc.text('Improvement Suggestions', margin, yPosition);
+   yPosition += 10;
+ 
+   doc.setFontSize(12);
+   doc.setTextColor(0, 0, 0); 
+   improvementSuggestions.forEach((suggestion) => {
+     const wrappedSuggestion = doc.splitTextToSize(`- ${suggestion}`, maxWidth - 10);
+     wrappedSuggestion.forEach((line) => {
+       doc.text(line, margin + 5, yPosition);
+       yPosition += 10;
+     });
+   });
+ 
+   // Save PDF
+   doc.save('Resume_Analysis_Report.pdf');
+ };
 
+ 
   return (
     <div id="dash" className="container my-5">
       {loading && <Spinner />}
