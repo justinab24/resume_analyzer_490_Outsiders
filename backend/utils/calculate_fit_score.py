@@ -13,13 +13,26 @@ def preprocess_text(text):
     """
     Tokenizes and normalizes text by converting to lowercase, removing punctuation, and splitting into words.
     """
+
     if not text or not isinstance(text, str):
-        return []
+        print("we got an empty string")
+        raise ValueError("Empty or non-string input provided to preprocess_text function")
     
-    # Remove punctuation and convert to lowercase
     text = text.translate(str.maketrans('', '', string.punctuation)).lower()
 
+    # Check if text contains non-alphanumeric characters
+    if any(char for char in text if not char.isalnum() and not char.isspace()):
+        print("we got a non-alphanumeric character")
+        raise ValueError("Input text contains non-alphanumeric characters")
+    
+    # Check if text is purely numeric
+    if text.isdigit():
+        print("we got a numeric character")
+        raise ValueError("Input text contains only numeric characters")
+
     tokens = word_tokenize(text)
+
+    print("we get these tokens", tokens)
 
     stop_words = set(stopwords.words('english'))
 
@@ -40,6 +53,8 @@ def calculate_fit_score(resume_text, job_description):
         }
 
     description_sections = job_description_sections(job_description)
+    print("Required section: ", description_sections["required"])
+    print("Preferred section: ", description_sections["preferred"])
     required_tokens = preprocess_text(description_sections["required"])
     preferred_tokens = preprocess_text(description_sections["preferred"])
     
@@ -48,6 +63,8 @@ def calculate_fit_score(resume_text, job_description):
     
     print("Resume Tokens: ", resume_tokens)
     print("Job Description Tokens: ", job_description_tokens)
+    print("Required Tokens: ", required_tokens)
+    print("Preferred Tokens: ", preferred_tokens)
     
     job_description_counter = Counter(job_description_tokens)
     
