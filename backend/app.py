@@ -1,9 +1,9 @@
 from fastapi import FastAPI, File, Request, UploadFile, Form, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from utils.nlp_functions import nlp_analysis
-from utils.calculateFitScore import calculate_fit_score
+from utils.calculate_fit_score import calculate_fit_score
 from services.authentication import register_user, login_user, jwt_generator
-from utils.parsing import extract_text_from_pdf_in_memory, extract_text_from_docx_in_memory
+from utils.parse_file_upload import extract_text_from_pdf_in_memory, extract_text_from_docx_in_memory
 from fastapi.responses import JSONResponse
 from utils.models import NLPInput, NLPOutput
 from pydantic import BaseModel

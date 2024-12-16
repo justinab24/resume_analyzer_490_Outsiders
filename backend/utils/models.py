@@ -4,8 +4,8 @@ class TextSubmission(BaseModel):
     text: str
 
 class FeedbackItem(BaseModel):
-            message: str
-            feedback_type: str
+            text: str
+            category: str
 
 class NLPInput(BaseModel):
     resume_text: str
@@ -14,4 +14,4 @@ class NLPInput(BaseModel):
 class NLPOutput(BaseModel):
     similarity_score: float
     keywords_matched: list[str]
-    feedback_raw: list[str]
+    feedback_raw: list[FeedbackItem]
