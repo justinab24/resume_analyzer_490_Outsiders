@@ -4,8 +4,8 @@ class TextSubmission(BaseModel):
     text: str
 
 class FeedbackItem(BaseModel):
-            message: str
-            feedback_type: str
+            text: str
+            category: str
 
 class NLPInput(BaseModel):
     resume_text: str

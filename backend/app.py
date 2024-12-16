@@ -1,22 +1,26 @@
 from fastapi import FastAPI, File, Request, UploadFile, Form, HTTPException
 from starlette.middleware.cors import CORSMiddleware
-from services.skill_extraction import nlp_analyzer
+from utils.nlp_functions import nlp_analysis
+from utils.calculate_fit_score import calculate_fit_score
 from services.authentication import register_user, login_user, jwt_generator
-from utils.parsing import extract_text_from_pdf_in_memory, extract_text_from_docx_in_memory
+from utils.parse_file_upload import extract_text_from_pdf_in_memory, extract_text_from_docx_in_memory
 from fastapi.responses import JSONResponse
-from services.models import NLPInput, NLPOutput
+from utils.models import NLPInput, NLPOutput
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import httpx
 import bcrypt
 import jwt
 import pdfplumber
+import json
 import os
 import io
 import docx
 import re
+from openai import OpenAI
 from collections import Counter
 import time
+
 
 #python3 -m uvicorn app:app --reload to run the api
 #http://127.0.0.1:8000/docs for easy testing of the api - use try it out button
@@ -40,7 +44,6 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
     return {"Hello": "World"}
 
 @app.get("/api")
@@ -115,49 +118,50 @@ async def descriptionUpload(submission: TextSubmission):
         content={"message": "Text submitted successfully", "character_count": len(submission.text)}
     )
 
-def calculate_fit_score(resume_text, job_description):
-    # Tokenize and normalize text
-    def tokenize(text):
-        return re.findall(r'\b\w+\b', text.lower())
-
-    resume_tokens = tokenize(resume_text)
-    job_tokens = tokenize(job_description)
-
-    # Count matching keywords
-    resume_counter = Counter(resume_tokens)
-    job_counter = Counter(job_tokens)
-
-    matches = sum((resume_counter & job_counter).values())
-    total_keywords = len(job_tokens)
-
-    return int((matches / total_keywords) * 100) if total_keywords > 0 else 0
-
-@app.post("/api/calculate-fit-score")
-async def calculate_fit_score_endpoint(
-    resume_text: str = Form(...), 
-    job_description: str = Form(...)
-):
-    
+@app.post("/api/fit-score")
+async def calculate_fit_score_endpoint(request: Request):
+    """
+    Endpoint to calculate fit score based on resume and job description. Uses NLP analysis and keyword matching.
+    """
+    print("endpoint hit")
+    json_payload = await request.json()
+    resume_text = json_payload.get("resume_text")
+    job_description = json_payload.get("job_description")
     if not resume_text.strip() or not job_description.strip():
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Both resume text and job description must be provided."
         )
-
     try:
-        fit_score = calculate_fit_score(resume_text, job_description)
-        return JSONResponse(
-            content={
-                "message": "Fit score calculated successfully.",
-                "fit_score": fit_score
-            }
-        )
+        nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
+        nlp_output = NLPOutput(similarity_score=0.0, keywords_matched=[], feedback_raw=[])
+        nlp_output = await analyze(nlp_input)
+        similarity_score = nlp_output.similarity_score
+        feedback = nlp_output.feedback_raw
+        matched_skills = nlp_output.keywords_matched
+        token_based_fitscores = calculate_fit_score(resume_text, job_description)
+        weighted_token_score = token_based_fitscores["weighted_token_score"]
+        unweighted_token_score = token_based_fitscores["unweighted_token_score"]
+        final_fit_score = ((weighted_token_score * 0.75) + (unweighted_token_score * 0.15) + (similarity_score * 0.1))
+
+        if final_fit_score < 0:
+            final_fit_score = 0
+
+        response = {
+            "similarity_score": round(final_fit_score, 2),
+            "keywords_matched": matched_skills,
+            "feedback_raw": feedback,
+        }
+
+        return response
+
     except Exception as e:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"An error occurred during fit score calculation: {str(e)}"
         )
     
+<<<<<<< HEAD
 @app.post("/api/analyze", response_model=NLPOutput)
 async def analyze(nlp_input: NLPInput):
     try:
@@ -167,3 +171,13 @@ async def analyze(nlp_input: NLPInput):
         return nlp_output  # FastAPI will serialize the output
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+=======
+@app.post("/api/analyze")
+async def analyze(nlp_input):
+    print("analyze endpoint has been hit")
+    resume_text = nlp_input.resume_text
+    job_description = nlp_input.job_description
+    nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
+    nlp_output = await nlp_analysis(nlp_input)
+    return nlp_output
+>>>>>>> origin/feature/justin-a
