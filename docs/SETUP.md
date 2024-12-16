@@ -1,11 +1,25 @@
-# Running the project locally
+#Running the Project Locally
 
-In order to run the project, you first must have docker installed on your machine
+To run the project locally, follow the steps below:
 
-Next, ensure the docker application is running
+1. Install Docker
+Ensure Docker is installed and running on your machine.  
 
+2. 
+Navigate to your desired directory in the terminal and clone the project repository:  
+git clone https://github.com/justinab24/resume-analyzer.git
+cd resume-analyzer
+
+3. Environment Configuration
+Navigate to the backend folder and create a `.env` file:
+HUGGINGFACE_API_KEY= API Key
+JWT_SECRET_KEY= Secret Key
+OPENAI_API_KEY= Secret Key
+
+4. Build and run with Docker
 Navigate to the root directory of the project and run 'docker-compose up --build' if first time or 'docker-compose up' if running again
 
+5. Trouble shooting
 Please note: If you get a package not found issue in the frontend, try doing npm install inside the frontend folder to get all dependencies. Then rerun the docker build command.
 
 This command will build the docker containers as well as any needed dependencies for the project as specified in requirements.txt
@@ -13,6 +27,11 @@ This command will build the docker containers as well as any needed dependencies
 Once the build finishes it will be running automatically
 
 Use ^C to stop the application running
+
+Application Access:
+Backend: The backend API runs at `http://127.0.0.1:8000`.
+Frontend: Access the frontend application at `http://127.0.0.1:3000`.  
+API Documentation: View Swagger UI at `http://127.0.0.1:8000/docs`.
 
 # Running the backend only
 python3 -m uvicorn app:app --reload to run the api

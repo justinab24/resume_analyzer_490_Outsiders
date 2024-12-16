@@ -12,10 +12,6 @@ transformers
 sentence-transformers
 torch
 httpx
-<<<<<<< HEAD
-nltk
-=======
 openai
 nltk
 pytest
->>>>>>> origin/feature/justin-a

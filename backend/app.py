@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, Request, UploadFile, Form, HTTPException
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from utils.nlp_functions import nlp_analysis
 from utils.calculate_fit_score import calculate_fit_score
 from services.authentication import register_user, login_user, jwt_generator
@@ -161,23 +161,10 @@ async def calculate_fit_score_endpoint(request: Request):
             detail=f"An error occurred during fit score calculation: {str(e)}"
         )
     
-<<<<<<< HEAD
-@app.post("/api/analyze", response_model=NLPOutput)
-async def analyze(nlp_input: NLPInput):
-    try:
-        print("analyze endpoint has been hit")
-        # Call the nlp_analyzer function
-        nlp_output = await nlp_analyzer(nlp_input)
-        return nlp_output  # FastAPI will serialize the output
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
-=======
 @app.post("/api/analyze")
-async def analyze(nlp_input):
+async def analyze(nlp_input: NLPInput):
     print("analyze endpoint has been hit")
     resume_text = nlp_input.resume_text
     job_description = nlp_input.job_description
-    nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
     nlp_output = await nlp_analysis(nlp_input)
     return nlp_output
->>>>>>> origin/feature/justin-a
