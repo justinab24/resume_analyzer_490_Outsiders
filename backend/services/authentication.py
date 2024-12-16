@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import bcrypt
 import jwt
 import os
@@ -42,7 +42,7 @@ def login_user(email, password):
     raise HTTPException(status_code=404, detail="User not found")
 
 def jwt_generator(username):
-    expiration = datetime.now() + timedelta(hours=3)
+    expiration = datetime.now(timezone.utc) + timedelta(hours=3)
     print(username)
     token = jwt.encode(
         {"sub": username, "exp": expiration},

@@ -16,8 +16,7 @@ const PrivateRoute = ({ element, ...rest }) => {
 
   console.log("is the token expired, ", isTokenExpired(token));
 
-  const isAuthenticated = token && !isTokenExpired(token);
-
+  const isAuthenticated = !isTokenExpired(token);
   // If the token is not present or expired, redirect to register
   return isAuthenticated ? element : <Navigate to="/register" />;
 };

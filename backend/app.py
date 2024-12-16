@@ -154,9 +154,9 @@ async def calculate_fit_score_endpoint(request: Request):
 
         response = {
             "similarity_score": {
-                "total": final_fit_score,
-                "matched_total": matched_skills_amount,
-                "missing_total": missing_skills,
+            "total": round(final_fit_score, 2),
+            "matched_total": matched_skills_amount,
+            "missing_total": missing_skills,
             },
             "keywords_matched": matched_skills,
             "feedback_raw": feedback,
