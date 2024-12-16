@@ -111,7 +111,7 @@ async def descriptionUpload(submission: TextSubmission):
     if len(submission.text) > 5000:  # Example: Require at least 50 characters
         raise HTTPException(
             status_code=400,
-            detail="Job description exceeds character limit."
+            detail="Job description exceeds character limit. Please make sure input is less than 5000 characters."
         )
     
     return JSONResponse(
@@ -162,10 +162,32 @@ async def calculate_fit_score_endpoint(request: Request):
         )
     
 @app.post("/api/analyze")
-async def analyze(nlp_input):
+async def analyze(nlp_input: NLPInput):
     print("analyze endpoint has been hit")
-    resume_text = nlp_input.resume_text
-    job_description = nlp_input.job_description
-    nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
-    nlp_output = await nlp_analysis(nlp_input)
-    return nlp_output
+    try:
+        # Extract inputs from the request object
+        resume_text = nlp_input.resume_text
+        job_description = nlp_input.job_description
+        nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
+        # Perform NLP analysis
+        nlp_output = await nlp_analysis(nlp_input)
+        return nlp_output
+
+    except ValueError as ve:
+        # Handle specific NLP analysis errors
+        raise HTTPException(
+            status_code=422,  # Unprocessable Entity
+            detail=f"Invalid data for NLP analysis: {str(ve)}"
+        )
+    except TimeoutError:
+        # Handle potential timeouts during processing
+        raise HTTPException(
+            status_code=504,  # Gateway Timeout
+            detail="NLP analysis took too long. Please try again later."
+        )
+    except Exception as e:
+        # Generic error handling
+        raise HTTPException(
+            status_code=500,
+            detail=f"An unexpected error occurred during analysis: {str(e)}"
+        )

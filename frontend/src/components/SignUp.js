@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../stylesheet/signup.css';
+import Popup from 'reactjs-popup';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +18,7 @@ const SignUp = () => {
         password,
       });
       setMessage(response.data.message);
-  
+
       if (response.data.message === 'User registered successfully') {
         navigate('/dashboard'); // Navigate to the dashboard
       }
@@ -60,7 +61,15 @@ const SignUp = () => {
 
       <h1>Already have an account?</h1>
       <a href="/login">Sign In</a>
-      <p>{message}</p>
+
+      {/* Use Popup to display error or success messages */}
+      <Popup open={!!message} closeOnDocumentClick onClose={() => setMessage('')}>
+        <div className="popupbutton">
+          <h2>!!!</h2>
+          <p>{message}</p>
+          <button onClick={() => setMessage('')}>Close</button>
+        </div>
+      </Popup>
     </div>
   );
 };

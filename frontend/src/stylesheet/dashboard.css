@@ -15,8 +15,10 @@
 }
 
 .container.my-5 {
-  padding-right: 8%;
+  padding-right: 6%;
   height: 600px; /* Set a fixed height */
+  min-width: 500px ;
+  width: 700px;
   overflow-y: auto; /* Enable vertical scrolling */
   overflow-x: hidden; /* Prevent horizontal scrolling (optional) */
 }
@@ -48,7 +50,9 @@
 }
 
 .card-body {
-  padding: 20px;
+  padding-left: 30px;
+  height: fixed;
+  width: fixed;
 }
 
 .card-title {
@@ -139,6 +143,14 @@ button:disabled {
     font-size: 0.9rem;
   }
 }
+
+/* Style for the Popup Content */
+.error-popup {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  padding: 10pt;
+}
+
 
 /* Ensure the title and fit score are always visible */
 .dashboard-wrapper {

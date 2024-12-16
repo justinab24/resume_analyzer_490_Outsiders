@@ -101,7 +101,10 @@
   font-family: Arial, sans-serif;
   padding: 10pt;
 }
-
+.popup-content {
+  border-radius: 15px;             /* Rounded corners for the popup box */
+  text-align: center;              /* Center text */
+}
 
 .form-container {
   width: 60%;

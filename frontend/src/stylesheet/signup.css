@@ -83,6 +83,18 @@ body {
     box-shadow: none;
     cursor: not-allowed;
   }
+  /* Style for the Popup Content */
+
+  .popupbutton {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 10pt;
+  }
+  .popup-content {
+    border-radius: 15px;             /* Rounded corners for the popup box */
+    text-align: center;              /* Center text */
+  }
+  
   
   a {
     text-align: center;

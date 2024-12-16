@@ -31,8 +31,11 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
         setResumeError('');
         setResume(file);
       }
+    } else {
+      setResumeError('');
     }
   };
+
 
   const jobDescript = (e) => {
     const input = e.target.value;
