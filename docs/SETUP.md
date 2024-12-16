@@ -30,7 +30,7 @@
 
 ---
 
-#Running backend pytests
+# Running backend pytests
 1. Open terminal in root directory
 2. Navigate to backend folder
 3. Run 'pytest'
