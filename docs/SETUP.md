@@ -30,6 +30,12 @@
 
 ---
 
+#Running backend pytests
+1. Open terminal in root directory
+2. Navigate to backend folder
+3. Run 'pytest'
+4. Wait for results to show up
+
 # Running the backend only
 python3 -m uvicorn app:app --reload to run the api
 http://127.0.0.1:8000/docs for easy testing of the api - use try it out button
