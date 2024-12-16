@@ -61,8 +61,8 @@ async def register(request: Request):
     email = json_payload.get("email")
     password = json_payload.get("password")
     username = json_payload.get("username")
-    register_user(email, password, username)
-    return {"message": "User registered successfully"}
+    register_response = register_user(email, password, username)
+    return register_response
 
 @app.post("/api/login")
 async def login(request: Request):
@@ -132,6 +132,8 @@ async def calculate_fit_score_endpoint(request: Request):
             status_code=400,
             detail="Both resume text and job description must be provided."
         )
+    print("justin we are getting this job description")
+    print(job_description)
     try:
         nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
         nlp_output = NLPOutput(similarity_score=0.0, keywords_matched=[], feedback_raw=[])
@@ -142,13 +144,20 @@ async def calculate_fit_score_endpoint(request: Request):
         token_based_fitscores = calculate_fit_score(resume_text, job_description)
         weighted_token_score = token_based_fitscores["weighted_token_score"]
         unweighted_token_score = token_based_fitscores["unweighted_token_score"]
+        matched_skills = token_based_fitscores["matched_keywords"]
+        matched_skills_amount = len(matched_skills)
+        missing_skills = token_based_fitscores["missing_keywords_total"]
         final_fit_score = ((weighted_token_score * 0.75) + (unweighted_token_score * 0.15) + (similarity_score * 0.1))
 
         if final_fit_score < 0:
             final_fit_score = 0
 
         response = {
-            "similarity_score": round(final_fit_score, 2),
+            "similarity_score": {
+                "total": final_fit_score,
+                "matched_total": matched_skills_amount,
+                "missing_total": missing_skills,
+            },
             "keywords_matched": matched_skills,
             "feedback_raw": feedback,
         }

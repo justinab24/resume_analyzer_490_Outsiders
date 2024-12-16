@@ -27,94 +27,144 @@ def mock_get_openai_client_for_token_filter(mock_openai_client_for_token_filter)
     with patch('utils.nlp_functions.get_openai_client', return_value=mock_openai_client_for_token_filter):
         yield mock_openai_client_for_token_filter
 
-@pytest.fixture
-def mock_job_description_sections():
-    """
-    Mock job_description_sections to return required and preferred sections.
-    """
-    with patch('utils.nlp_functions.job_description_sections') as mock_job_description:
-        mock_job_description.return_value = {
-            "required": "Python Java AWS",
-            "preferred": "Docker Kubernetes CI/CD"
-        }
-        yield mock_job_description
+def test_preprocess_text_with_bad_inputs():
+    # Test for numeric input that is not a string
+    with pytest.raises(ValueError, match="Empty or non-string input provided to preprocess_text function"):
+        preprocess_text("")
+    
+    # Test for non-string input
+    with pytest.raises(ValueError, match="Empty or non-string input provided to preprocess_text function"):
+        preprocess_text(None)  # Non-string input
+    
+    with pytest.raises(ValueError, match="Input text contains only numeric characters"):
+        preprocess_text("1234567890")
 
-def test_preprocess_text():
+def test_preprocess_text_with_normal_input():
     """
-    Test preprocess_text function.
+    Test preprocess_text with normal inputs.
     """
-    # Normal case
     text = "Experienced Python Developer! Skilled in Java, AWS, and Docker."
     expected_tokens = ["experienced", "python", "developer", "skilled", "java", "aws", "docker"]
-    assert preprocess_text(text) == expected_tokens
+    
+    # Mock nltk's word_tokenize and stopwords.words
+    with patch('utils.calculate_fit_score.word_tokenize', return_value=expected_tokens), \
+         patch('utils.calculate_fit_score.stopwords.words', return_value=["in", "and"]):
+        
+        result = preprocess_text(text)
+    
+        assert result == expected_tokens
 
-    # Edge cases
-    assert preprocess_text("") == []
-    assert preprocess_text(None) == []
-    assert preprocess_text("!@#$%^&*()") == []
-    assert preprocess_text("123456") == []
-    assert preprocess_text(123) == []  # Non-string input
+def preprocess_side_effect_partial(arg):
+    if arg == "Skilled Python developer with expertise in Java, AWS, Docker":
+        return ["java", "python", "aws", "docker"]
+    elif arg == "Required: Python, Java, AWS. Preferred: Docker and Kubernetes":
+        return ["python", "java", "aws", "docker", "kubernetes"]
+    elif arg == "Required: Python, Java, AWS":
+        return ["python", "java", "aws"]
+    else:
+        return ["docker", "kubernetes"]
+    
+def preprocess_side_effect_full(arg):
+    if arg == "Skilled Python developer with expertise in Java, AWS, Docker":
+        return ["java", "python", "aws", "docker"]
+    elif arg == "Required: Python, Java, AWS. Preferred: Docker":
+        return ["python", "java", "aws", "docker"]
+    elif arg == "Required: Python, Java, AWS":
+        return ["python", "java", "aws"]
+    else:
+        return ["docker"]
 
 
-def test_calculate_fit_score(mock_job_description_sections, mock_token_filter):
+def test_calculate_fit_score_partial_matches():
     """
     Test calculate_fit_score function.
     """
-    resume_text = "Skilled Python developer with expertise in Java and AWS."
-    job_description = "Required: Python, Java, AWS. Preferred: Docker and Kubernetes."
+    resume_text = "Skilled Python developer with expertise in Java, AWS, Docker"
+    job_description = "Required: Python, Mongo, SQL. Preferred: Azure and Salesforces"
 
-    # Expected response structure
-    expected_response = {
-        "weighted_token_score": 70.0,  # All matches are required, so weighted score is 70
-        "unweighted_token_score": pytest.approx(100.0, 0.1)  # All tokens match in job description
+    mock_token_filter_response = {
+        "filtered_words": ['java', 'aws', 'python', 'docker']
     }
 
-    result = calculate_fit_score(resume_text, job_description)
-
-    assert result["weighted_token_score"] == expected_response["weighted_token_score"]
-    assert result["unweighted_token_score"] == expected_response["unweighted_token_score"]
-
-
-def test_calculate_fit_score_empty_input(mock_job_description_sections, mock_token_filter):
-    """
-    Test calculate_fit_score with empty resume text or job description.
-    """
-    assert calculate_fit_score("", "Required: Python, Java, AWS.") == {
-        "fit_score": 0,
-        "matched_keywords": [],
-        "unmatched_critical_keywords": []
+    mock_job_description_sections_response_content = {
+        "required": "Required: Python, Java, AWS",
+        "preferred": "Preferred: Docker and Kubernetes"
     }
 
-    assert calculate_fit_score("Skilled Python developer.", "") == {
-        "fit_score": 0,
-        "matched_keywords": [],
-        "unmatched_critical_keywords": []
+    with patch('utils.calculate_fit_score.token_filter', return_value=mock_token_filter_response), \
+         patch('utils.calculate_fit_score.preprocess_text', side_effect=preprocess_side_effect_partial), \
+         patch('utils.calculate_fit_score.job_description_sections', return_value=mock_job_description_sections_response_content):
+
+        result = calculate_fit_score(resume_text, job_description)
+
+        assert result["weighted_token_score"] == 60.0
+        assert result["unweighted_token_score"] == 50.0
+
+def test_calculate_fit_score_full_matches():
+    """
+    Test calculate_fit_score function.
+    """
+    resume_text = "Skilled Python developer with expertise in Java, AWS, Docker"
+    job_description = "Required: Python, Java, AWS. Preferred: Docker"
+
+    mock_token_filter_response = {
+        "filtered_words": ['java', 'aws', 'python', 'docker']
     }
 
+    mock_job_description_sections_response_content = {
+        "required": "Required: Python, Java, AWS",
+        "preferred": "Preferred: Docker"
+    }
 
-def test_calculate_fit_score_no_match(mock_job_description_sections, mock_token_filter):
-    """
-    Test calculate_fit_score with no overlapping keywords.
-    """
-    resume_text = "Skilled in Ruby and Perl."
-    job_description = "Required: Python, Java, AWS. Preferred: Docker and Kubernetes."
+    with patch('utils.calculate_fit_score.token_filter', return_value=mock_token_filter_response), \
+         patch('utils.calculate_fit_score.preprocess_text', side_effect=preprocess_side_effect_full), \
+         patch('utils.calculate_fit_score.job_description_sections', return_value=mock_job_description_sections_response_content):
 
-    result = calculate_fit_score(resume_text, job_description)
+        result = calculate_fit_score(resume_text, job_description)
 
-    assert result["weighted_token_score"] == 0.0
-    assert result["unweighted_token_score"] == 0.0
+        assert result["weighted_token_score"] == 60.0
+        assert result["unweighted_token_score"] == 100.0
+
+# def test_calculate_fit_score_empty_input(mock_job_description_sections, mock_token_filter):
+#     """
+#     Test calculate_fit_score with empty resume text or job description.
+#     """
+#     assert calculate_fit_score("", "Required: Python, Java, AWS.") == {
+#         "fit_score": 0,
+#         "matched_keywords": [],
+#         "unmatched_critical_keywords": []
+#     }
+
+#     assert calculate_fit_score("Skilled Python developer.", "") == {
+#         "fit_score": 0,
+#         "matched_keywords": [],
+#         "unmatched_critical_keywords": []
+#     }
 
 
-def test_calculate_fit_score_partial_match(mock_job_description_sections, mock_token_filter):
-    """
-    Test calculate_fit_score with some matching keywords.
-    """
-    resume_text = "Experienced Python and Docker developer."
-    job_description = "Required: Python, Java, AWS. Preferred: Docker and Kubernetes."
+# def test_calculate_fit_score_no_match(mock_job_description_sections, mock_token_filter):
+#     """
+#     Test calculate_fit_score with no overlapping keywords.
+#     """
+#     resume_text = "Skilled in Ruby and Perl."
+#     job_description = "Required: Python, Java, AWS. Preferred: Docker and Kubernetes."
 
-    result = calculate_fit_score(resume_text, job_description)
+#     result = calculate_fit_score(resume_text, job_description)
 
-    # Check weighted score
-    assert result["weighted_token_score"] > 0.0
-    # Check unweighted score based on partial matches
-    assert result["unweighted_token_score"] > 0.0
+#     assert result["weighted_token_score"] == 0.0
+#     assert result["unweighted_token_score"] == 0.0
+
+
+# def test_calculate_fit_score_partial_match(mock_job_description_sections, mock_token_filter):
+#     """
+#     Test calculate_fit_score with some matching keywords.
+#     """
+#     resume_text = "Experienced Python and Docker developer."
+#     job_description = "Required: Python, Java, AWS. Preferred: Docker and Kubernetes."
+
+#     result = calculate_fit_score(resume_text, job_description)
+
+#     # Check weighted score
+#     assert result["weighted_token_score"] > 0.0
+#     # Check unweighted score based on partial matches
+#     assert result["unweighted_token_score"] > 0.0

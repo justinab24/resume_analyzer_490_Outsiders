@@ -13,11 +13,27 @@ def preprocess_text(text):
     """
     Tokenizes and normalizes text by converting to lowercase, removing punctuation, and splitting into words.
     """
+    print("we are in the preprocess text function")
+    print(text)
+
     if not text or not isinstance(text, str):
-        return []
+        print(f"Invalid input type: {type(text)}")
+        print("we got an empty string")
+        print(text)
+        raise ValueError("Empty or non-string input provided to preprocess_text function")
     
-    # Remove punctuation and convert to lowercase
     text = text.translate(str.maketrans('', '', string.punctuation)).lower()
+
+    # # Check if text contains non-alphanumeric characters
+    # non_alnum_chars = [char for char in text if not char.isalnum() and not char.isspace()]
+    # if non_alnum_chars:
+    #     print("we got non-alphanumeric characters:", non_alnum_chars)
+    #     raise ValueError("Input text contains non-alphanumeric characters")
+    
+    # Check if text is purely numeric
+    if text.isdigit():
+        print("we got a numeric character")
+        raise ValueError("Input text contains only numeric characters")
 
     tokens = word_tokenize(text)
 
@@ -40,53 +56,54 @@ def calculate_fit_score(resume_text, job_description):
         }
 
     description_sections = job_description_sections(job_description)
-    required_tokens = preprocess_text(description_sections["required"])
-    preferred_tokens = preprocess_text(description_sections["preferred"])
+
+    required_section = description_sections["required"]
+    preferred_section = description_sections["preferred"]
     
     resume_tokens = preprocess_text(resume_text)
     job_description_tokens = preprocess_text(job_description)
     
-    print("Resume Tokens: ", resume_tokens)
-    print("Job Description Tokens: ", job_description_tokens)
-    
     job_description_counter = Counter(job_description_tokens)
     
     matched_keywords = set(resume_tokens) & set(job_description_tokens)
-    matched_keywords_list = list(matched_keywords)
 
-    print("Matched Keywords: ", matched_keywords)
+    missing_keywords = set(job_description_tokens) - set(resume_tokens)
+
+    missing_keywords_list = list(missing_keywords)
+
+    filtered_missing_keywords = token_filter(missing_keywords_list)
+
+    missing_keywords_total = len(filtered_missing_keywords["filtered_words"])
+
+    matched_keywords_list = list(matched_keywords)
     
     filtered_matched_keywords = token_filter(matched_keywords_list)
-    print("Filtered Matched Keywords: ", filtered_matched_keywords)
 
     total_matched = len(matched_keywords)
 
     matched_count = sum(job_description_counter[key] for key in matched_keywords)
 
-
-    requiredCounter = 0
-    preferredCounter = 0
-    neitherCounter = 0
-    
-    for word in filtered_matched_keywords["filtered_words"]:
-        if word.lower() in required_tokens:
-            requiredCounter += 1
-        elif word.lower() in preferred_tokens:
-            preferredCounter += 1
-        else:
-            neitherCounter += 1
-    
-    print("Here are the two counts")
-    print(requiredCounter)
-    print(preferredCounter)
-    print(neitherCounter)
-    print(total_matched)
-    print(matched_count)
-
     total_filtered = len(filtered_matched_keywords["filtered_words"])
+
     if total_filtered == 0:
         weighted_token_score = 0
+    elif not required_section or not preferred_section:
+        weighted_token_score = 0
     else:
+        required_tokens = preprocess_text(description_sections["required"])
+        preferred_tokens = preprocess_text(description_sections["preferred"])
+
+        requiredCounter = 0
+        preferredCounter = 0
+        neitherCounter = 0
+        
+        for word in filtered_matched_keywords["filtered_words"]:
+            if word.lower() in required_tokens:
+                requiredCounter += 1
+            elif word.lower() in preferred_tokens:
+                preferredCounter += 1
+            else:
+                neitherCounter += 1
         # Weighted score calculation, capped at 100
         weighted_token_score = (
             (requiredCounter / (requiredCounter + preferredCounter)) * 70 +
@@ -104,6 +121,8 @@ def calculate_fit_score(resume_text, job_description):
     response = {
         "weighted_token_score": round(weighted_token_score, 2),
         "unweighted_token_score": round(unweighted_token_score, 2),
+        "matched_keywords": filtered_matched_keywords["filtered_words"],
+        "missing_keywords_total": missing_keywords_total,
     }
 
     print("We generate this response: ")

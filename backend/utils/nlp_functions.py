@@ -37,15 +37,15 @@ def openai_analysis(resume_text, job_description):
     prompt = f"""
         I have a resume and a job description. I need you to compare the skills in the resume against the skills in the job description.
         Please provide:
-        1: A similarity score between the two pieces of text as a percent (from 0 to 1)
+        1: A similarity score between the two pieces of text as a percent (from 0 to 1). This should be how similar the resume is to the job description. Consider size, text, skills, etc.
         2. An array of skills that are common between the resume and job description. The exact word should be in both the resume and job description. Get ALL instances of this check thoroughly
-        3. An array of feedback for improving the resume. This can cover skills, projects, experience, etc. Ensure the feedback isnt already on the resume. Also for each feedback categorize it as "skills" or "experience"
+        3. An array of feedback for improving the resume, IN RESPECT TO THE JOB DESCRIPTION. If nothing can be gathered from the job description, leave this blank (do not make up anything or add general improvements not tailored to the inputted job description) . This can cover skills, projects, experience, etc. Ensure the feedback isnt already on the resume. Also for each feedback categorize it as "skills" or "experience"
 
         Format your response as a json object like:
 
        {{
             "results": {{
-                "similiarity_score": 0.85,
+                "similarity_score": 0.85,
                 "matched_skills": ["Skill 1", "Skill 2", ...],
                 "feedback_raw": [
                     {{
@@ -183,3 +183,4 @@ def job_description_sections(job_description):
         else:
             print(f"Error with OpenAI API: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error with OpenAI API: {str(e)}")
+
