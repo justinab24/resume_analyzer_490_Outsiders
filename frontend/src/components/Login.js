@@ -17,9 +17,17 @@ const Login = () => {
       });
       localStorage.setItem('token', response.data.token);
       setMessage('Login successful');
-      navigate('/dashboard')
+      navigate('/dashboard');
     } catch (error) {
-      setMessage(error.response.data.detail || 'Error logging in');
+      let errorMessage = 'Error logging in';
+      if (error.response) {
+        if (error.response.data && error.response.data.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (error.response.data) {
+          errorMessage = error.response.data;
+        }
+      }
+      setMessage(errorMessage);
     }
   };
 

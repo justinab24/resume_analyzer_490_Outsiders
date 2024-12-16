@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-bcrypt
-pyjwt
-python-dotenv
-pdfplumber
-python-multipart
-starlette
-python-docx

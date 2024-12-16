@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../stylesheet/signup.css';
+import Popup from 'reactjs-popup';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
@@ -14,26 +17,47 @@ const SignUp = () => {
       const response = await axios.post('http://localhost:8000/api/register', {
         email,
         password,
+        username
       });
       setMessage(response.data.message);
-
       if (response.data.message === 'User registered successfully') {
+        console.log("User registered successfully");
+        console.log(response.data.token);
+        localStorage.setItem('token', response.data.token);
         navigate('/dashboard'); // Navigate to the dashboard
       }
     } catch (error) {
-      setMessage(error.response.data.detail || 'Error registering user');
+      console.error('Error details:', error); // Log the error details for debugging
+      let errorMessage;
+      if (error.response) {
+        errorMessage = error.response.data && error.response.data.detail 
+          ? error.response.data.detail 
+          : error.response.statusText || 'Error registering user';
+      } else if (error.request) {
+        errorMessage = 'Network error: Please check your connection or try again later.';
+      } else {
+        errorMessage = error.message || 'An unexpected error occurred';
+      }
+      setMessage(errorMessage);
     }
   };
 
   return (
     <div>
       <h1>Sign Up</h1>
-      <form onSubmit={handleSubmit}>
+      <form id="signup" onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="username"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
         <input
@@ -48,7 +72,15 @@ const SignUp = () => {
 
       <h1>Already have an account?</h1>
       <a href="/login">Sign In</a>
-      <p>{message}</p>
+
+      {/* Use Popup to display error or success messages */}
+      <Popup open={!!message} closeOnDocumentClick onClose={() => setMessage('')}>
+        <div className="popupbutton">
+          <h2>!!!</h2>
+          <p>{message}</p>
+          <button onClick={() => setMessage('')}>Close</button>
+        </div>
+      </Popup>
     </div>
   );
 };
