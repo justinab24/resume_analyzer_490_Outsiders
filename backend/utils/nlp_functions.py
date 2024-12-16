@@ -12,6 +12,7 @@ from openai import OpenAIError
 from openai import OpenAI
 import re
 
+load_dotenv()
 
 def get_openai_client():
     return OpenAI(api_key=os.getenv("OPEN_AI_KEY"))
