@@ -6,6 +6,7 @@ import '../stylesheet/signup.css';
 const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
@@ -15,10 +16,13 @@ const SignUp = () => {
       const response = await axios.post('http://localhost:8000/api/register', {
         email,
         password,
+        username
       });
       setMessage(response.data.message);
-  
       if (response.data.message === 'User registered successfully') {
+        console.log("User registered successfully");
+        console.log(response.data.token);
+        localStorage.setItem('token', response.data.token);
         navigate('/dashboard'); // Navigate to the dashboard
       }
     } catch (error) {
@@ -46,6 +50,13 @@ const SignUp = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="username"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
         <input

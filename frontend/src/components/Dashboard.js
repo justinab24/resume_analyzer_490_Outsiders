@@ -45,9 +45,9 @@ function Dashboard() {
 
   const COLORS = ['#28a745', '#ffc107', '#dc3545'];
   const fitData = [
-    { name: 'Matched Skills', value: fitScore.matched },
-    { name: 'Partial Matches', value: fitScore.partial },
-    { name: 'Missing Skills', value: fitScore.missing },
+    { name: 'Matched Skills', value: fitScore?.matched || 0 },
+    { name: 'Partial Matches', value: fitScore?.partial || 0 },
+    { name: 'Missing Skills', value: fitScore?.missing || 0 },
   ];
 
   //pdf styling section
@@ -83,7 +83,7 @@ function Dashboard() {
     drawBoxWithShadow(margin, yPosition, maxWidth, fitScoreHeight, [132, 206, 235], [244, 244, 244]); 
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Fit Score: ${fitScore.total}%`, margin + 5, yPosition + 12);
+    doc.text(`Fit Score: ${fitScore?.total || 0}%`, margin + 5, yPosition + 12);
     yPosition += fitScoreHeight + 10;
    // Matched Keywords Section (without box)
    doc.setTextColor(136, 96, 208); 
@@ -125,8 +125,8 @@ function Dashboard() {
 
  
   return (
-    <div id="dash" className="container my-5">
-      {loading && <Spinner />}
+    <div id="dash" className="container my-5" data-testid="dashboard">
+      {loading && <Spinner data-testid="spinner"/>}
       {!showDashboard && (
         <ResumeForm
           setFitScore={setFitScore}
@@ -136,30 +136,30 @@ function Dashboard() {
           setShowDashboard={setShowDashboard}
         />
       )}
-      {showDashboard && (
+      {showDashboard && fitScore && (
         <div className="dashboard-wrapper" style={{ paddingTop: '20px' }}>
           <h2>Resume Analysis Dashboard</h2>
           <Card className="mt-4 mb-4">
             <Card.Body>
               <Card.Title>Resume Fit Score</Card.Title>
               <ProgressBar
-                now={fitScore.total}
-                label={`${fitScore.total}%`}
+                now={fitScore?.total || 0}
+                label={`${fitScore?.total || 0}%`}
                 style={{
                   height: '20px',
                   backgroundColor: '#f4f4f4',
-                  width: `${fitScore.total}%`,
+                  width: `${fitScore?.total || 0}%`,
                   background:
-                    fitScore.total === 100 ? 'linear-gradient(135deg, #007bff, #0056b3)' :
-                    fitScore.total <= 30 ? 'linear-gradient(135deg, #dc3545, #c82333)' :
-                    fitScore.total <= 60 ? 'linear-gradient(135deg, #ffc107, #e0a800)' :
+                    fitScore?.total === 100 ? 'linear-gradient(135deg, #007bff, #0056b3)' :
+                    fitScore?.total <= 30 ? 'linear-gradient(135deg, #dc3545, #c82333)' :
+                    fitScore?.total <= 60 ? 'linear-gradient(135deg, #ffc107, #e0a800)' :
                     'linear-gradient(135deg, #28a745, #218838)',
                   transition: 'background 0.3s ease, width 0.3s ease',
                 }}
                 className="custom-progress-bar"
               />
               <div className="pie-chart-wrapper" style={{ overflow: 'visible', paddingTop: '20px' }}>
-                <PieChart width={chartSize.width} height={chartSize.height}>
+                <PieChart width={chartSize.width} height={chartSize.height} id='pieChart'>
                   <Pie
                     data={fitData}
                     cx="50%"
@@ -215,7 +215,7 @@ function Dashboard() {
             <Button
               variant="success"
               onClick={generatePDF}
-              disabled={loading || fitScore.total === 0}
+              disabled={loading || fitScore?.total === 0}
             >
               Download PDF Report
             </Button>

@@ -3,16 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
+    "canvas": "^2.11.2",
     "jspdf": "^2.5.2",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.6",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.0.1",
+    "react-router-dom": "^6.28.0",
     "react-scripts": "5.0.1",
+    "react-test-renderer": "^18.3.1",
     "reactjs-popup": "^2.0.6",
     "recharts": "^2.13.3",
     "web-vitals": "^2.1.4"
@@ -40,5 +40,23 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-react": "^7.26.3",
+    "@playwright/test": "^1.49.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^27.5.1"
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "/node_modules/(?!axios|react-router-dom)"
+    ],
+    "moduleNameMapper": {
+      "\\.css$": "identity-obj-proxy"
+    }
   }
 }

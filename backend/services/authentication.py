@@ -22,10 +22,14 @@ def register_user(email, password, username):
         "password": hashed_password,
         "username": username,
     }
-
+    print("we received this username in the backend, ", username)
     users.append(newUser)
 
-    return {"message": "User registered successfully"}
+    token = jwt_generator(username)
+
+    print(token)
+
+    return {"message": "User registered successfully", "token": token}
 
 def login_user(email, password):
     for user in users:

@@ -25,6 +25,8 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
         setResumeError('Only PDF and DOCX files are allowed');
         setResume(null);
       } else if (file.size > MAX_FILE_SIZE) {
+        console.log("we got a big file")
+        console.log(file.size);
         setResumeError('File size must be less than 2MB');
         setResume(null);
       } else {
@@ -97,10 +99,10 @@ const ResumeForm = ({ setFitScore, setMatchedSkills, setImprovementSuggestions, 
         );
   
         setFitScore({
-          total: analyzeResponse.data.similarity_score,
-          matched: 50,
+          total: analyzeResponse.data.similarity_score.total,
+          matched: analyzeResponse.data.similarity_score.matched_total,
           partial: 15,
-          missing: 35,
+          missing: analyzeResponse.data.similarity_score.missing_total,
         });
   
         setMatchedSkills(analyzeResponse.data.keywords_matched);

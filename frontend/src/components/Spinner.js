@@ -1,10 +1,8 @@
 import React from 'react';
-import '../stylesheet/spinner.css'; 
+import '../stylesheet/spinner.css';
 
-const Spinner = () => (
-  <div className="spinner-overlay">
-    <div className="spinner"></div>
-  </div>
+const Spinner = ({ 'data-testid': testId }) => (
+  <div className="spinner" data-testid={testId}></div>
 );
 
 export default Spinner;
