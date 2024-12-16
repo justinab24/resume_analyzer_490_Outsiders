@@ -1,24 +1,31 @@
 from fastapi import FastAPI, File, Request, UploadFile, Form, HTTPException
 from starlette.middleware.cors import CORSMiddleware
+from utils.nlp_functions import nlp_analysis
+from utils.calculateFitScore import calculate_fit_score
+from services.authentication import register_user, login_user, jwt_generator
+from utils.parsing import extract_text_from_pdf_in_memory, extract_text_from_docx_in_memory
 from fastapi.responses import JSONResponse
+from utils.models import NLPInput, NLPOutput
 from pydantic import BaseModel
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
+import httpx
 import bcrypt
 import jwt
 import pdfplumber
-import os
+import json
 import os
 import io
 import docx
 import re
+from openai import OpenAI
 from collections import Counter
+import time
+
 
 #python3 -m uvicorn app:app --reload to run the api
 #http://127.0.0.1:8000/docs for easy testing of the api - use try it out button
 
-load_dotenv(dotenv_path="./backend/.env")
-SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+timeout = httpx.Timeout(30.0, connect=60.0)  # 30 seconds for read, 60 seconds for connection
 
 
 
@@ -35,11 +42,8 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-users = []
-
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
     return {"Hello": "World"}
 
 @app.get("/api")
@@ -55,70 +59,23 @@ async def dashboard(token: str):
 async def register(request: Request):
     json_payload = await request.json()
     email = json_payload.get("email")
-    for user in users:
-        if user['email'] == email:
-            return {"message": "Email already registered, please sign in"}
-            return {"message": "Email already registered, please sign in"}
     password = json_payload.get("password")
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-
-    newUser = {
-        "email": email,
-        "password": hashed_password,
-        "username": json_payload.get("username"),
-        "username": json_payload.get("username"),
-    }
-
-    users.append(newUser)
-
+    username = json_payload.get("username")
+    register_user(email, password, username)
     return {"message": "User registered successfully"}
-
-def jwt_generator(username):
-    expiration = datetime.now() + timedelta(hours=3)
-    print(username)
-    token = jwt.encode(
-        {"sub": username, "exp": expiration},
-        SECRET_KEY,
-        algorithm="HS256",
-    )
-    return token
-
-
-def jwt_generator(username):
-    expiration = datetime.now() + timedelta(hours=3)
-    print(username)
-    token = jwt.encode(
-        {"sub": username, "exp": expiration},
-        SECRET_KEY,
-        algorithm="HS256",
-    )
-    return token
-
 
 @app.post("/api/login")
 async def login(request: Request):
     json_payload = await request.json()
-    print(users)
     email = json_payload.get("email")
     password = json_payload.get("password")
-    for user in users:
-        if user['email'] == email:
-            if bcrypt.checkpw(password.encode('utf-8'), user['password']):
-                token = jwt_generator(user['username'])
-                token = jwt_generator(user['username'])
-                return {"message": "Login successful", "token": token}
-            else:
-                return {"message": "Invalid password"}
-    return {"message": "User not found"}
+    response = login_user(email, password)
+    return response
 
 @app.post("/api/resume-upload")
 async def resumeUpload(file: UploadFile = File(...)):
-    print("did we hit this endpoint")
-    # Check if the uploaded file is a PDF
     if file.content_type not in ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]:
         raise HTTPException(status_code=400, detail="Invalid file type. Only PDF and DOCX files are accepted.")
-
 
     try:
         # Read the uploaded file content into memory
@@ -144,10 +101,7 @@ async def resumeUpload(file: UploadFile = File(...)):
 
 @app.post("/api/job-description")
 async def descriptionUpload(submission: TextSubmission):
-    """
-    Endpoint to submit resume text directly.
-    Validates that the text is not empty and meets a minimum length requirement.
-    """
+
     if not submission.text.strip():
         raise HTTPException(
             status_code=400,
@@ -164,86 +118,54 @@ async def descriptionUpload(submission: TextSubmission):
         content={"message": "Text submitted successfully", "character_count": len(submission.text)}
     )
 
-
-def extract_text_from_pdf_in_memory(file_content: bytes) -> str:
+@app.post("/api/fit-score")
+async def calculate_fit_score_endpoint(request: Request):
     """
-    Extract text from a PDF file stored in memory.
-
-    Args:
-        file_content (bytes): The binary content of the PDF file.
-
-    Returns:
-        str: Extracted text from the PDF file.
+    Endpoint to calculate fit score based on resume and job description. Uses NLP analysis and keyword matching.
     """
-    with pdfplumber.open(io.BytesIO(file_content)) as pdf:
-        text = ""
-        for page in pdf.pages:
-            text += page.extract_text() + "\n"
-    return text
-
-def extract_text_from_docx_in_memory(file_content: bytes) -> str:
-    """
-    Extract text from a DOCX file stored in memory.
-
-    Args:
-        file_content (bytes): The binary content of the DOCX file.
-
-    Returns:
-        str: Extracted text from the DOCX file.
-    """
-    doc = docx.Document(io.BytesIO(file_content))
-    text = ""
-    for paragraph in doc.paragraphs:
-        text += paragraph.text + "\n"
-    return text
-
-
-def calculate_fit_score(resume_text, job_description):
-    # Tokenize and normalize text
-    def tokenize(text):
-        return re.findall(r'\b\w+\b', text.lower())
-
-    resume_tokens = tokenize(resume_text)
-    job_tokens = tokenize(job_description)
-
-    # Count matching keywords
-    resume_counter = Counter(resume_tokens)
-    job_counter = Counter(job_tokens)
-
-    matches = sum((resume_counter & job_counter).values())
-    total_keywords = len(job_tokens)
-
-    return int((matches / total_keywords) * 100) if total_keywords > 0 else 0
-
-@app.post("/api/calculate-fit-score")
-async def calculate_fit_score_endpoint(
-    resume_text: str = Form(...), 
-    job_description: str = Form(...)
-):
-    """
-    API endpoint to calculate a fit score between a resume and job description.
-    Args:
-        resume_text (str): Text extracted from the resume.
-        job_description (str): Text provided for the job description.
-    Returns:
-        JSONResponse: Fit score and message.
-    """
+    print("endpoint hit")
+    json_payload = await request.json()
+    resume_text = json_payload.get("resume_text")
+    job_description = json_payload.get("job_description")
     if not resume_text.strip() or not job_description.strip():
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Both resume text and job description must be provided."
         )
-
     try:
-        fit_score = calculate_fit_score(resume_text, job_description)
-        return JSONResponse(
-            content={
-                "message": "Fit score calculated successfully.",
-                "fit_score": fit_score
-            }
-        )
+        nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
+        nlp_output = NLPOutput(similarity_score=0.0, keywords_matched=[], feedback_raw=[])
+        nlp_output = await analyze(nlp_input)
+        similarity_score = nlp_output.similarity_score
+        feedback = nlp_output.feedback_raw
+        matched_skills = nlp_output.keywords_matched
+        token_based_fitscores = calculate_fit_score(resume_text, job_description)
+        weighted_token_score = token_based_fitscores["weighted_token_score"]
+        unweighted_token_score = token_based_fitscores["unweighted_token_score"]
+        final_fit_score = ((weighted_token_score * 0.75) + (unweighted_token_score * 0.15) + (similarity_score * 0.1))
+
+        if final_fit_score < 0:
+            final_fit_score = 0
+
+        response = {
+            "similarity_score": round(final_fit_score, 2),
+            "keywords_matched": matched_skills,
+            "feedback_raw": feedback,
+        }
+
+        return response
+
     except Exception as e:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"An error occurred during fit score calculation: {str(e)}"
         )
+    
+@app.post("/api/analyze")
+async def analyze(nlp_input):
+    print("analyze endpoint has been hit")
+    resume_text = nlp_input.resume_text
+    job_description = nlp_input.job_description
+    nlp_input = NLPInput(resume_text=resume_text, job_description=job_description)
+    nlp_output = await nlp_analysis(nlp_input)
+    return nlp_output

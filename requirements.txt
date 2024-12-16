@@ -7,3 +7,10 @@ pdfplumber
 python-multipart
 starlette
 python-docx
+requests
+transformers
+sentence-transformers
+torch
+httpx
+openai
+nltk
