@@ -1,4 +1,0 @@
-pdfplumber
-dotenv
-bcrypt
-dotx
