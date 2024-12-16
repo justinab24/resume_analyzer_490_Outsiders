@@ -1,14 +1,14 @@
 html, body {
-  height: 100%; /* Ensures both html and body stretch to full height */
+  height: 100%; 
   margin: 0;
   padding: 0;
 }
 
 body {
   background: linear-gradient(135deg, #5680E9, #5AB9EA, #C1C8E4, #8860D0);
-  background-attachment: fixed; /* Keeps the background fixed in place */
-  background-size: cover; /* Ensures the gradient covers the entire viewport */
-  background-position: center; /* Centers the gradient */
+  background-attachment: fixed; 
+  background-size: cover; 
+  background-position: center; 
   display: flex;
   justify-content: center;
   align-items: center;

@@ -13,9 +13,14 @@
 .custom-progress-bar .progress-bar[variant="custom"] {
   background-color: #f4f4f4;
 }
+
 .container.my-5 {
   padding-right: 8%;
+  height: 600px; /* Set a fixed height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling (optional) */
 }
+
 /* Card Styles */
 .card {
   border: none;
@@ -24,11 +29,12 @@
   overflow: hidden;
   margin-bottom: 20px;
 }
+
 /* Add spacing for top and bottom (mt-4 and mb-4) */
 .mt-4 {
   margin-top: 16px;
-
 }
+
 .ml-4 {
   margin-left: 16px;
 }
@@ -36,9 +42,11 @@
 .mr-4 {
   margin-right: 16px;
 }
+
 .mb-4 {
   margin-bottom: 16px;
 }
+
 .card-body {
   padding: 20px;
 }
@@ -66,7 +74,6 @@ button:hover {
   background: linear-gradient(135deg, #5680E9,#8860D0);
   transform: translateY(-2px);
 }
-
 
 button:disabled {
   background: #e0e0e0;
@@ -131,4 +138,37 @@ button:disabled {
   button {
     font-size: 0.9rem;
   }
+}
+
+/* Ensure the title and fit score are always visible */
+.dashboard-wrapper {
+  position: relative;
+  padding-top: 20px;
+}
+
+.pie-chart-wrapper {
+  overflow: visible;
+  padding-top: 20px;
+}
+
+/* Custom dropdown styling */
+.custom-dropdown {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 1rem;
+  color: #495057;
+  transition: border-color 0.3s ease;
+}
+
+.custom-dropdown:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Remove scroll bar from ListGroup */
+.no-scroll {
+  overflow: hidden;
 }
