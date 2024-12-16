@@ -14,3 +14,4 @@ torch
 httpx
 openai
 nltk
+pytest

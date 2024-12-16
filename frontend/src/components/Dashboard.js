@@ -198,7 +198,7 @@ function Dashboard() {
                 <ListGroup>
                   {filteredFeedback.map((suggestion, index) => (
                     <ListGroup.Item key={index}>
-                      <span className="text-danger">⚠</span> {suggestion}
+                      <span className="text-danger">⚠</span> {suggestion.text}
                     </ListGroup.Item>
                   ))}
                 </ListGroup>
