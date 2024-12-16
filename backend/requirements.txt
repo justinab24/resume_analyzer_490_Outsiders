@@ -2,3 +2,4 @@ pdfplumber
 dotenv
 bcrypt
 dotx
+nltk
