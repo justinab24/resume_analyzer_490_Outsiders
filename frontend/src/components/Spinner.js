@@ -1,9 +1,11 @@
 import React from 'react';
-import '../stylesheet/spinner.css'; 
+import '../stylesheet/spinner.css';
 
 const Spinner = () => (
-  <div className="spinner-overlay">
-    <div className="spinner"></div>
+  <div className="overlay">
+    <div className="drawing">
+      <div className="loading-dot"></div>
+    </div>
   </div>
 );
 

@@ -13,6 +13,9 @@
 .custom-progress-bar .progress-bar[variant="custom"] {
   background-color: #f4f4f4;
 }
+.popup-overlay { /* If this is the class causing the issue */
+  margin-top: 0;
+}
 
 .container.my-5 {
   padding-right: 6%;

@@ -102,8 +102,12 @@
   padding: 10pt;
 }
 .popup-content {
-  border-radius: 15px;             /* Rounded corners for the popup box */
-  text-align: center;              /* Center text */
+  border-radius: 15px;             
+  text-align: center;              
+}
+
+.popup-overlay { 
+  margin-top: 0;
 }
 
 .form-container {

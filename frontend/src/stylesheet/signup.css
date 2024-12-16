@@ -95,7 +95,9 @@ body {
     text-align: center;              /* Center text */
   }
   
-  
+  .popup-overlay { 
+    margin-top: 0;
+  }
   a {
     text-align: center;
     display: block;
