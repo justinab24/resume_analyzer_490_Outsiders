@@ -18,7 +18,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    platform: linux/amd64  # Force the x86-64 platform here
     ports:
       - "3000:3000"
     volumes:
@@ -26,27 +25,8 @@ services:
     command: sh -c "npm install && npm start"
     depends_on:
       - backend
-    
-  frontend-tests:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    platform: linux/amd64  # Force the x86-64 platform here
-    volumes:
-      - ./frontend:/app
-    command: sh -c "npm install && npm test && npx playwright test"
-    depends_on:
-      - backend
-  
-  backend-tests:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    volumes:
-      - ./backend:/app
-    command: sh -c "pip install -r requirements.txt && pytest"
-    depends_on:
-      - backend
+    networks:
+      - app-network
 
 networks:
   app-network:
